@@ -1,2 +1,2 @@
 # TP-Server
-Simple server fo Technopark Highload course
+Simple server for Technopark Highload course
