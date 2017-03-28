@@ -7,7 +7,6 @@
 class ClientHandler {
 private:
     int socket;
-    char* receiveExactly(size_t bytes);
 
 public:
     ClientHandler(int socket);
