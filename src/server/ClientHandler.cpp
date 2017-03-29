@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <sys/socket.h>
+#include <iostream>
 #include "../../include/server/ClientHandler.h"
 #include "../../include/helpers/utils.h"
 
@@ -20,7 +21,8 @@ void ClientHandler::sendRaw(const char* data) {
     while (left > 0) {
         sent = ::send(socket, data + sent, dataSize - sent, 0);
         if (sent == -1) {
-            utils::log("Unable to send data!");
+            //utils::log("Unable to send data!"); //TODO: fix it
+            std::cout << "Unable to send data!" << std::endl;
             return;
         }
         left -= sent;
@@ -32,8 +34,10 @@ char* ClientHandler::receiveRaw() {
     char* buffer = new char[bufferSize];
     size_t read = recv(socket, buffer, bufferSize, 0); //Blocking
     if (read<0) {
+        std::cout << read << std::endl;
         delete[] buffer;
         return NULL;
     }
+    std::cout << buffer << std::endl;
     return buffer;
 }
