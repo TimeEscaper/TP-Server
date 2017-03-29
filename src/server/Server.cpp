@@ -25,8 +25,7 @@ Server::Server(int port) {
     }
     listen(socket, DEFAULT_BACKLOG_SIZE);
 
-    //utils::log("Server created!"); //TODO: fix
-    std::cout << "Server created!" << std::endl;
+    utils::log("Server created!");
 }
 
 Server::~Server() {

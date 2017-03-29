@@ -22,8 +22,7 @@ void ClientHandler::sendRaw(const char* data) {
     while (left > 0) {
         sent = ::send(socket, data + sent, dataSize - sent, 0);
         if (sent == -1) {
-            //utils::log("Unable to send data!"); //TODO: fix it
-            std::cout << "Unable to send data!" << std::endl;
+            utils::log("Unable to send data!");
             return;
         }
         left -= sent;
