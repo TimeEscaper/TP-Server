@@ -47,12 +47,13 @@ void Server::start() {
         socklen_t clientLen = sizeof(clientAddr);
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
-        std::cout << clientSocket << std::endl;
         ClientHandler client(clientSocket);
         handleClient(client);
     }
 }
 
 void Server::handleClient(ClientHandler client) {
-    client.sendRaw("HTTP/1.1 200 OK\r\n\r\nHello, World!\r\n");
+    char* request = client.receiveRaw();
+    std::cout << request << std::endl;
+    client.sendRaw("HTTP/1.1 200 OK\r\n\r\n<html><body><b>Hello, World!</body></html>\r\n");
 }
