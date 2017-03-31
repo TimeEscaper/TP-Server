@@ -5,6 +5,7 @@
 #include <iostream>
 #include "../../include/server/Server.h"
 #include "../../include/helpers/utils.h"
+#include "../../include/http/http.h"
 
 Server::Server(int port) {
     this->port = port;
@@ -53,6 +54,6 @@ void Server::start() {
 
 void Server::handleClient(ClientHandler client) {
     char* request = client.receiveRaw();
-    std::cout << request << std::endl;
-    client.sendRaw("HTTP/1.1 200 OK\r\n\r\n<html><body><b>Hello, World!</body></html>\r\n");
+    utils::log(request);
+    client.sendRaw(HTTP200RAW);
 }
