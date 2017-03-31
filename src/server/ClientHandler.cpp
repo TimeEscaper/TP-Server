@@ -4,6 +4,7 @@
 #include <cstring>
 #include "../../include/server/ClientHandler.h"
 #include "../../include/helpers/utils.h"
+#include "../../include/server/Server.h"
 
 ClientHandler::ClientHandler(int socket) {
     this->socket = socket; //TODO: check on < 0
@@ -30,7 +31,7 @@ void ClientHandler::sendRaw(const char* data) {
 }
 
 char* ClientHandler::receiveRaw() {
-    size_t bufferSize = DEFAULT_REQUEST_BUFFER; //TODO: may be moved to private field
+    size_t bufferSize = DEFAULT_REQUEST_BUFFER;
     char* buffer = new char[bufferSize];
     size_t read = recv(socket, buffer, bufferSize, 0); //Blocking
     if (read<0) {

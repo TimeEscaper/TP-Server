@@ -5,6 +5,9 @@
 
 #define DEFAULT_BACKLOG_SIZE 10
 
+//TODO: Move to static or protected field in server or client (may need to bind monitor)
+#define ROOT_PATH "/home/sibirsky/static"
+
 class Server {
 private:
     int port;

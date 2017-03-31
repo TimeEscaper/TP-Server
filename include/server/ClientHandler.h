@@ -3,12 +3,11 @@
 
 #include <cstddef>
 
-#define DEFAULT_REQUEST_BUFFER 1024
+#define DEFAULT_REQUEST_BUFFER 256
 
 class ClientHandler {
 private:
     int socket;
-    char* readFile(const char* path);
 
 public:
     ClientHandler(int socket);

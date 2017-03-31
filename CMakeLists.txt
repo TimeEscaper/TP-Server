@@ -3,5 +3,5 @@ project(TP-Server)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/main.cpp src/server/ClientHandler.cpp include/server/ClientHandler.h src/server/Server.cpp include/server/Server.h src/server/WorkerThread.cpp include/server/WorkerThread.h src/thread/ThreadPool.cpp include/thread/ThreadPool.h src/thread/IThreadHandler.cpp include/thread/IThreadHandler.h include/helpers/utils.h src/helpers/utils.cpp src/http/http.cpp include/http/http.h)
+set(SOURCE_FILES src/main.cpp src/server/ClientHandler.cpp include/server/ClientHandler.h src/server/Server.cpp include/server/Server.h src/server/WorkerThread.cpp include/server/WorkerThread.h src/thread/ThreadPool.cpp include/thread/ThreadPool.h src/thread/IThreadHandler.cpp include/thread/IThreadHandler.h include/helpers/utils.h src/helpers/utils.cpp src/http/http.cpp include/http/http.h src/server/FileObserver.cpp include/server/FileObserver.h)
 add_executable(httpd ${SOURCE_FILES})
