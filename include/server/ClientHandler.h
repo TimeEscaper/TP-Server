@@ -8,6 +8,7 @@
 class ClientHandler {
 private:
     int socket;
+    char* readFile(const char* path);
 
 public:
     ClientHandler(int socket);
