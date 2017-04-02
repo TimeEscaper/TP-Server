@@ -5,20 +5,20 @@
 
 #define DEFAULT_BACKLOG_SIZE 10
 
-//TODO: Move to static or protected field in server or client (may need to bind monitor)
-#define ROOT_PATH "/home/sibirsky/static"
 
 class Server {
 private:
     int port;
     int socket;
+    char* rootDir = new char;
     bool isWorking = false;
     void handleClient(ClientHandler client); //Temp method
 
 public:
-    Server(int port);
+    Server(int port, const char* rootDir);
     ~Server();
     int getPort();
+    char* getRootDir();
     void start();
     void stop();
     void restart();

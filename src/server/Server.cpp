@@ -7,7 +7,7 @@
 #include "../../include/helpers/utils.h"
 #include "../../include/http/http.h"
 
-Server::Server(int port) {
+Server::Server(int port, const char* rootDir) {
     this->port = port;
     socket = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket <= 0)
@@ -24,15 +24,26 @@ Server::Server(int port) {
         close(socket);
         return;
     }
+
+    strcpy(this->rootDir, rootDir);
     listen(socket, DEFAULT_BACKLOG_SIZE);
 
     utils::log("Server created!");
+    utils::log(rootDir);
 }
 
 Server::~Server() {
     if (socket > 0) {
         close(socket);
     }
+}
+
+int Server::getPort() { return port; }
+
+char* Server::getRootDir() {
+    char* res = new char;
+    strcpy(res, rootDir);
+    return res;
 }
 
 void Server::start() {
