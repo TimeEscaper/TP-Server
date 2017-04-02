@@ -10,8 +10,12 @@
 Server::Server(int port, const char* rootDir) {
     this->port = port;
     socket = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (socket <= 0)
-        return;
+    if (socket <= 0) {
+        cleanUp();
+        throw std::runtime_error("Unable to create socket: " + std::string(strerror(errno)));
+    }
+
+    
 
     struct sockaddr_in serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -21,8 +25,9 @@ Server::Server(int port, const char* rootDir) {
 
     int binded = bind(socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
     if (binded < 0) {
+        cleanUp();
         close(socket);
-        return;
+        throw std::runtime_error("Unable to bind socket: " + std::string(strerror(errno)));
     }
 
     strcpy(this->rootDir, rootDir);
@@ -33,9 +38,15 @@ Server::Server(int port, const char* rootDir) {
 }
 
 Server::~Server() {
+    utils::log("~Server()");
+    cleanUp();
     if (socket > 0) {
         close(socket);
     }
+}
+
+void Server::cleanUp() {
+    delete rootDir;
 }
 
 int Server::getPort() { return port; }
@@ -65,6 +76,12 @@ void Server::start() {
 
 void Server::handleClient(ClientHandler client) {
     char* request = client.receiveRaw();
-    utils::log(request);
+    char* method = new char;
+    char* path = new char;
+    http::parseRequest(request, &method, &path);
+    if (method == NULL) {
+        client.sendRaw(HTTP404RAW);
+        return;
+    }
     client.sendRaw(HTTP200RAW);
 }

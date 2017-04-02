@@ -7,7 +7,10 @@
 #include "../../include/server/Server.h"
 
 ClientHandler::ClientHandler(int socket) {
-    this->socket = socket; //TODO: check on < 0
+    if (socket <= 0) {
+        throw std::runtime_error("Unable to handle client: socket <= 0");
+    }
+    this->socket = socket;
 }
 
 ClientHandler::~ClientHandler() {

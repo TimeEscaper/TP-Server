@@ -12,6 +12,7 @@ private:
     int socket;
     char* rootDir = new char;
     bool isWorking = false;
+    void cleanUp();
     void handleClient(ClientHandler client); //Temp method
 
 public:

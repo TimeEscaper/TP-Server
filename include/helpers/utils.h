@@ -1,6 +1,7 @@
 #ifndef TP_SERVER_UTILS_H
 #define TP_SERVER_UTILS_H
 
+#include <iostream>
 #include <string>
 
 namespace utils {
