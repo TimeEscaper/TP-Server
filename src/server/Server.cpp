@@ -38,9 +38,6 @@ Server::Server(int port, const char* rootDir) {
 
     strcpy(this->rootDir, rootDir);
     listen(socket, DEFAULT_BACKLOG_SIZE);
-
-    utils::log("Server created!");
-    utils::log(rootDir);
 }
 
 Server::~Server() {
@@ -63,9 +60,12 @@ char* Server::getRootDir() {
     return res;
 }
 
-void Server::start() {
-    if ((isWorking) || (socket <= 0)) {
-        return;
+int Server::start() {
+    if (socket <= 0) {
+        throw new std::runtime_error("Socket was not handled");
+    }
+    if (isWorking) {
+        return 0;
     }
     isWorking = true;
 
@@ -77,15 +77,19 @@ void Server::start() {
         socklen_t clientLen = sizeof(clientAddr);
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
-        if ((clientSocket==-1) && (errno == EAGAIN)) {
-            continue;
+        if (!((clientSocket == -1) && (errno == EAGAIN))) {
+            ClientHandler client(clientSocket);
+            handleClient(client);
         }
-        ClientHandler client(clientSocket);
-        handleClient(client);
     }
+
+    return 0;
 }
 
 void Server::stop() {
+    if (socket <= 0) {
+        throw new std::runtime_error("Socket was not handled");
+    }
     if (isWorking) {
         isWorking = false;
     }

@@ -1,6 +1,7 @@
 #ifndef TP_SERVER_SERVER_H
 #define TP_SERVER_SERVER_H
 
+#include <thread>
 #include "ClientHandler.h"
 
 #define DEFAULT_BACKLOG_SIZE 10
@@ -20,7 +21,7 @@ public:
     ~Server();
     int getPort();
     char* getRootDir();
-    void start();
+    int start(); //int type for using with thread
     void stop();
     void restart();
 };
