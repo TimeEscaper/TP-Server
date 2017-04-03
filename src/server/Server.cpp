@@ -3,6 +3,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <iostream>
+#include <fcntl.h>
 #include "../../include/server/Server.h"
 #include "../../include/helpers/utils.h"
 #include "../../include/http/http.h"
@@ -15,7 +16,12 @@ Server::Server(int port, const char* rootDir) {
         throw std::runtime_error("Unable to create socket: " + std::string(strerror(errno)));
     }
 
-    
+    int currentFlags = fcntl(socket, F_GETFL, 0);
+    int setFlags = currentFlags | O_NONBLOCK;
+    if (fcntl(socket, F_SETFL, setFlags) == -1) {
+        cleanUp();
+        throw std::runtime_error("Unable to make socket non-blocking: " + std::string(strerror(errno)));
+    }
 
     struct sockaddr_in serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -64,13 +70,24 @@ void Server::start() {
     isWorking = true;
 
     while (isWorking) {
+        sleep(1);
+
         struct sockaddr_in clientAddr;
         memset(&clientAddr, 0, sizeof(clientAddr));
         socklen_t clientLen = sizeof(clientAddr);
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
+        if ((clientSocket==-1) && (errno == EAGAIN)) {
+            continue;
+        }
         ClientHandler client(clientSocket);
         handleClient(client);
+    }
+}
+
+void Server::stop() {
+    if (isWorking) {
+        isWorking = false;
     }
 }
 

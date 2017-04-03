@@ -21,4 +21,16 @@ void http::parseRequest(const char *request, char **parsedMethod, char **parsedP
     } else if (strcmp(method, METHOD_HEAD) == 0) {
         strcpy(*parsedMethod, METHOD_HEAD);
     }
+
+    i++;
+    int copyStart = i;
+    while ((request[i] != ' ') && (request[i] != '\0')) {
+        i++;
+    }
+    if ((request[i] == '\0')) {
+        parsedPath = NULL;
+        return;
+    }
+    int copyEnd = i;
+    strncpy(*parsedPath, &request[copyStart], (copyEnd - copyStart)*sizeof(char));
 }

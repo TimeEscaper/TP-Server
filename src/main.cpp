@@ -10,6 +10,8 @@ int main(int argc, char* argv[])
     try {
         Server server(SERVER_PORT, ROOT_PATH);
         server.start();
+        getchar();
+        server.stop();
     } catch (std::runtime_error e) {
         std::cout << e.what() << std::endl;
     }
