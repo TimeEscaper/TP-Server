@@ -16,6 +16,9 @@ Server::Server(int port, const char* rootDir) {
         throw std::runtime_error("Unable to create socket: " + std::string(strerror(errno)));
     }
 
+    int options = 1;
+    setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &options, sizeof(options));
+
     int currentFlags = fcntl(socket, F_GETFL, 0);
     int setFlags = currentFlags | O_NONBLOCK;
     if (fcntl(socket, F_SETFL, setFlags) == -1) {
