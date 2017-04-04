@@ -12,7 +12,10 @@
 #define HTTP200RAW "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nConnection: Closed\r\n\r\nHello, World!"
 
 namespace http {
-    char* makeResponse(const char* status, const char* contentType, const char* connection, const char* body);
+    char* makeResponseHead(const char* status, const char* contentType, size_t contentLength,
+                           const char* connection);
+    char* makeResponse(const char* status, const char* contentType, size_t contentLength,
+                       const char* connection, const char* body);
     void parseRequest(const char* request, char** parsedMethod, char** parsedPath);
 }
 

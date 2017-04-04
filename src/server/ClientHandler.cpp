@@ -34,14 +34,12 @@ void ClientHandler::sendRaw(const char* data) {
 }
 
 char* ClientHandler::receiveRaw() {
-    size_t bufferSize = DEFAULT_REQUEST_BUFFER;
-    char* buffer = new char[bufferSize];
-    size_t read = recv(socket, buffer, bufferSize, 0); //Blocking
+    char buffer[DEFAULT_REQUEST_BUFFER];
+    size_t read = recv(socket, buffer, DEFAULT_REQUEST_BUFFER, 0); //Blocking
     if (read<0) {
         std::cout << read << std::endl;
-        delete[] buffer;
-        return NULL;
     }
-
-    return buffer;
+    char* result = new char;
+    strcpy(result, buffer);
+    return result;
 }
