@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-#define DEFAULT_REQUEST_BUFFER 256
+#define DEFAULT_REQUEST_BUFFER 1024
 
 class ClientHandler {
 private:
@@ -13,8 +13,8 @@ public:
     ClientHandler(int socket);
     ~ClientHandler();
     int getSocket();
-    void sendRaw(const char* data);
-    char* receiveRaw();
+    long sendRaw(const char* data);
+    void receiveRaw(long* received, char** receivePtr);
 };
 
 

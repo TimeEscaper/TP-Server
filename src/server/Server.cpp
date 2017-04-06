@@ -4,9 +4,12 @@
 #include <unistd.h>
 #include <iostream>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "../../include/server/Server.h"
 #include "../../include/helpers/utils.h"
 #include "../../include/http/http.h"
+
+#define CHUNK 256
 
 Server::Server(int port, const char* rootDir) {
     this->port = port;
@@ -99,13 +102,51 @@ void Server::stop() {
 }
 
 void Server::handleClient(ClientHandler client) {
-    char* request = client.receiveRaw();
-    char* method = new char;
-    char* path = new char;
-    http::parseRequest(request, &method, &path);
-    if (method == NULL) {
-        client.sendRaw(HTTP404RAW);
+    char* request;
+    long received;
+    client.receiveRaw(&received, &request);
+    if (request == NULL) {
         return;
     }
-    client.sendRaw(HTTP200RAW);
+    char* method;
+    char* path;
+    http::parseRequest(request, &method, &path);
+    if ((method == NULL) || (path == NULL)) {
+        client.sendRaw(HTTP500RAW);
+        delete request, method, path;
+        return;
+    }
+
+    char* fullPath = getRootDir();
+    strcat(fullPath, path);
+    int filed = open(fullPath, O_RDONLY);
+    if (filed <= -1) {
+        client.sendRaw(HTTP404RAW);
+        delete request, method, path, fullPath;
+        return;
+    }
+    struct stat statBuf;
+    if (fstat(filed, &statBuf) != 0) {
+        client.sendRaw(HTTP500RAW);
+        delete request, method, path, fullPath;
+        return;
+    }
+    if (S_ISDIR(statBuf.st_mode)) {
+        client.sendRaw(HTTP404RAW);
+        delete request, method, path, fullPath;
+        return;
+    }
+    ssize_t fileSize = statBuf.st_size;
+    client.sendRaw(http::makeResponseHead(STATUS_OK, "text/html", fileSize, "Closed"));
+
+    char fileBuffer[CHUNK];
+    long readBytes, sentBytes;
+    while ((readBytes =read(filed, fileBuffer, CHUNK)) > 0) {
+        sentBytes = client.sendRaw(fileBuffer);
+        if (sentBytes < readBytes) {
+            break;
+        }
+    }
+    close(filed);
+    delete request, method, path, fullPath;
 }

@@ -7,6 +7,12 @@
 namespace utils {
 
     inline void log(std::string message) { std::cout << message << std::endl; }
+
+    inline char* newString() {
+        char* str = new char;
+        str[0] = '\0';
+        return str;
+    }
 }
 
 #endif //TP_SERVER_UTILS_H
