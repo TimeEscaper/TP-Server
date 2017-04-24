@@ -11,14 +11,17 @@ typedef enum {
     CANCELLED
 } ThreadState;
 
+typedef struct {
+    ThreadState state;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+} ThreadStateSync;
+
 class AbstractThreadHandler {
 protected:
     int error;
     pthread_t pthread;
-    struct {
-        ThreadState state;
-        pthread_mutex_t mutex;
-    } state;
+    ThreadStateSync state = {ThreadState::INITED, PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER};
     void setState(ThreadState newState);
     void *threadRoutine(void *arg);
     virtual void threadWork();

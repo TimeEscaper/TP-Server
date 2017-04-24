@@ -8,8 +8,11 @@
 class WorkerThread : AbstractThreadHandler {
 protected:
     ClientHandler *client;
+    void threadWork();
+    char* rootDir = new char;
 public:
-    ClientHandler* getCurrentClient();
+    WorkerThread(const char* rootDir);
+    char* getRootDir();
     void processClient(ClientHandler **newClient);
 };
 

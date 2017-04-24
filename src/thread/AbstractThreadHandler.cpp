@@ -2,7 +2,6 @@
 #include "../../include/helpers/utils.h"
 
 AbstractThreadHandler::AbstractThreadHandler() {
-    state = {ThreadState::INITED, PTHREAD_MUTEX_INITIALIZER};
 }
 
 AbstractThreadHandler::~AbstractThreadHandler() {
@@ -11,7 +10,7 @@ AbstractThreadHandler::~AbstractThreadHandler() {
 }
 
 void AbstractThreadHandler::setState(ThreadState newState) {
-    while (pthread_mutex_lock(&state.mutex) != 0) { };
+    pthread_mutex_lock(&state.mutex);
     state.state = newState;
     if (pthread_mutex_unlock(&state.mutex) != 0) {
         utils::log("Unable to unlock mutex!");
@@ -20,11 +19,14 @@ void AbstractThreadHandler::setState(ThreadState newState) {
 }
 
 ThreadState AbstractThreadHandler::getState() {
-    return state.state;
+    pthread_mutex_lock(&state.mutex);
+    ThreadState resultState = state.state;
+    pthread_mutex_unlock(&state.mutex);
+    return resultState;
 }
 
 void AbstractThreadHandler::run() {
-    if (state.state == ThreadState::INITED) {
+    if (getState() == ThreadState::INITED) {
         setState(ThreadState::FREE);
         error = pthread_create(&pthread, NULL, threadRoutine, NULL);
         if (error != 0) {
