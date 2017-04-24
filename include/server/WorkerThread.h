@@ -2,10 +2,10 @@
 #define TP_SERVER_WORKERTHREAD_H
 
 
-#include "../thread/ThreadHandler.h"
+#include "../thread/AbstractThreadHandler.h"
 #include "ClientHandler.h"
 
-class WorkerThread : ThreadHandler {
+class WorkerThread : AbstractThreadHandler {
 protected:
     ClientHandler *client;
 public:

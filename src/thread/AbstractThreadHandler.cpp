@@ -1,24 +1,24 @@
-#include "../../include/thread/ThreadHandler.h"
+#include "../../include/thread/AbstractThreadHandler.h"
 #include "../../include/helpers/utils.h"
 
-ThreadHandler::ThreadHandler() {
+AbstractThreadHandler::AbstractThreadHandler() {
     state = ThreadState::INITED;
 }
 
-ThreadHandler::~ThreadHandler() {
+AbstractThreadHandler::~AbstractThreadHandler() {
     cancel();
     cleanup();
 }
 
-void ThreadHandler::setState(ThreadState newState) {
+void AbstractThreadHandler::setState(ThreadState newState) {
     state = newState;
 }
 
-ThreadState ThreadHandler::getState() {
+ThreadState AbstractThreadHandler::getState() {
     return state;
 }
 
-void ThreadHandler::run() {
+void AbstractThreadHandler::run() {
     if (state == ThreadState::INITED) {
         setState(ThreadState::FREE);
         error = pthread_create(&pthread, NULL, threadRoutine, NULL);
@@ -28,7 +28,7 @@ void ThreadHandler::run() {
     }
 }
 
-void ThreadHandler::cancel() {
+void AbstractThreadHandler::cancel() {
     if ((getState() == ThreadState::BUSY) || (getState() == ThreadState::FREE)) {
         setState(ThreadState::CANCELLED);
         error = pthread_cancel(pthread);
@@ -42,6 +42,6 @@ void ThreadHandler::cancel() {
     }
 }
 
-void *ThreadHandler::threadRoutine(void *arg) {
+void *AbstractThreadHandler::threadRoutine(void *arg) {
     threadWork();
 }

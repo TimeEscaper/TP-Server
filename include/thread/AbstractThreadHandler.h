@@ -1,5 +1,5 @@
-#ifndef TP_SERVER_ITHREADHANDLER_H
-#define TP_SERVER_ITHREADHANDLER_H
+#ifndef TP_SERVER_THREADHANDLER_H
+#define TP_SERVER_THREADHANDLER_H
 
 #include <pthread.h>
 
@@ -11,7 +11,7 @@ typedef enum {
     CANCELLED
 } ThreadState;
 
-class ThreadHandler {
+class AbstractThreadHandler {
 protected:
     int error;
     pthread_t pthread;
@@ -21,12 +21,12 @@ protected:
     virtual void threadWork();
     virtual void cleanup();
 public:
-    ThreadHandler();
-    ~ThreadHandler();
+    AbstractThreadHandler();
+    ~AbstractThreadHandler();
     void run();
     void cancel();
     ThreadState getState();
 };
 
 
-#endif //TP_SERVER_ITHREADHANDLER_H
+#endif //TP_SERVER_THREADHANDLER_H
