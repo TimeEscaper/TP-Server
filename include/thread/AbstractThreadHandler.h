@@ -15,7 +15,10 @@ class AbstractThreadHandler {
 protected:
     int error;
     pthread_t pthread;
-    ThreadState state;
+    struct {
+        ThreadState state;
+        pthread_mutex_t mutex;
+    } state;
     void setState(ThreadState newState);
     void *threadRoutine(void *arg);
     virtual void threadWork();
