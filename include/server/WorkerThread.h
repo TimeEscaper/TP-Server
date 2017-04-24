@@ -2,10 +2,15 @@
 #define TP_SERVER_WORKERTHREAD_H
 
 
-#include "../thread/IThreadHandler.h"
+#include "../thread/ThreadHandler.h"
+#include "ClientHandler.h"
 
-class WorkerThread : IThreadHandler {
-
+class WorkerThread : ThreadHandler {
+protected:
+    ClientHandler *client;
+public:
+    ClientHandler* getCurrentClient();
+    void processClient(ClientHandler **newClient);
 };
 
 
