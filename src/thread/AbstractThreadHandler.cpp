@@ -2,20 +2,22 @@
 #include "../../include/helpers/utils.h"
 
 AbstractThreadHandler::AbstractThreadHandler() {
+    state = {ThreadState::FREE, PTHREAD_MUTEX_INITIALIZER};
+    pthread_mutex_unlock(&state.mutex);
+    int error = pthread_create(&pthread, NULL, threadRoutine, NULL);
+    if (error != 0) {
+        state.state = ThreadState::ERROR;
+    }
 }
 
 AbstractThreadHandler::~AbstractThreadHandler() {
     cancel();
-    cleanup();
 }
 
 void AbstractThreadHandler::setState(ThreadState newState) {
     pthread_mutex_lock(&state.mutex);
     state.state = newState;
-    if (pthread_mutex_unlock(&state.mutex) != 0) {
-        utils::log("Unable to unlock mutex!");
-    }
-
+    pthread_mutex_unlock(&state.mutex);
 }
 
 ThreadState AbstractThreadHandler::getState() {
@@ -25,20 +27,12 @@ ThreadState AbstractThreadHandler::getState() {
     return resultState;
 }
 
-void AbstractThreadHandler::run() {
-    if (getState() == ThreadState::INITED) {
-        setState(ThreadState::FREE);
-        error = pthread_create(&pthread, NULL, threadRoutine, NULL);
-        if (error != 0) {
-            setState(ThreadState::NOT_STARTED);
-        }
-    }
-}
 
 void AbstractThreadHandler::cancel() {
-    if ((getState() == ThreadState::BUSY) || (getState() == ThreadState::FREE)) {
-        setState(ThreadState::CANCELLED);
-        error = pthread_cancel(pthread);
+    pthread_mutex_lock(&state.mutex);
+    if ((state.state == ThreadState::BUSY) || (state.state == ThreadState::FREE)) {
+        state.state = ThreadState::CANCELLED;
+        int error = pthread_cancel(pthread);
         if (error != 0) {
             utils::log("Unable to cancel thread!");
         }
@@ -47,6 +41,7 @@ void AbstractThreadHandler::cancel() {
             utils::log("Unable to detach thread!");
         }
     }
+    pthread_mutex_unlock(&state.mutex);
 }
 
 void *AbstractThreadHandler::threadRoutine(void *arg) {

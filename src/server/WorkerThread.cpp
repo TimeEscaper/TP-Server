@@ -11,6 +11,13 @@
 
 WorkerThread::WorkerThread(const char *rootDir) {
     strcpy(this->rootDir, rootDir);
+    workState = {false, PTHREAD_MUTEX_INITIALIZER};
+}
+
+WorkerThread::~WorkerThread() {
+    if (client != NULL) {
+        delete client;
+    }
 }
 
 char* WorkerThread::getRootDir() {
@@ -19,21 +26,31 @@ char* WorkerThread::getRootDir() {
     return res;
 }
 
-void WorkerThread::processClient(ClientHandler **newClient) {
+void WorkerThread::handleClient(ClientHandler **newClient) {
     pthread_mutex_lock(&state.mutex);
     if (state.state == ThreadState::FREE) {
         client = *newClient;
         state.state = ThreadState::BUSY;
-        pthread_cond_signal(&state.cond);
+        pthread_mutex_lock(&workState.mutex);
+        workState.hasWork = true;
+        pthread_cond_signal(&workState.cond);
+        pthread_mutex_unlock(&workState.mutex);
     }
     pthread_mutex_unlock(&state.mutex);
 }
 
+bool WorkerThread::isAvalible() {
+    pthread_mutex_lock(&state.mutex);
+    bool avalible = state.state == ThreadState::FREE;
+    pthread_mutex_unlock(&state.mutex);
+    return avalible;
+}
+
 void WorkerThread::threadWork() {
     while (true) {
-        pthread_mutex_lock(&state.mutex);
-        while (state.state != ThreadState::BUSY) {
-            pthread_cond_wait(&state.cond, &state.mutex);
+        pthread_mutex_lock(&workState.mutex);
+        while (!workState.hasWork) {
+            pthread_cond_wait(&workState.cond, &workState.mutex);
         }
 
         char* request;
@@ -85,6 +102,9 @@ void WorkerThread::threadWork() {
         delete request, method, path, fullPath;
         delete client;
 
+        pthread_mutex_unlock(&workState.mutex);
+        pthread_mutex_lock(&state.mutex);
+        state.state = ThreadState::FREE;
         pthread_mutex_unlock(&state.mutex);
     }
 }
