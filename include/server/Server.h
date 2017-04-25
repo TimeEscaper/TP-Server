@@ -12,20 +12,19 @@ class Server {
 private:
     int port;
     int socket;
-    char* rootDir = new char;
+    std::string rootDir;
     bool isWorking = false;
     void cleanUp();
-    void handleClient(ClientHandler client); //Temp method
     WorkerThread *worker;
 
 public:
-    Server(int port, const char* rootDir);
+    Server(int port, const std::string &rootDir);
     ~Server();
     int getPort();
-    char* getRootDir();
+    std::string getRootDir();
     int start(); //int type for using with thread
     void stop();
-    void restart();
+    //void restart();
 };
 
 

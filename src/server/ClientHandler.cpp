@@ -19,13 +19,14 @@ ClientHandler::~ClientHandler() {
     }
 }
 
-long ClientHandler::sendRaw(const char* data) {
-    size_t dataSize = strlen(data);
-    size_t left = strlen(data);
+long ClientHandler::sendRaw(const std::string &data) {
+    const char* dataPtr = data.c_str();
+    size_t dataSize = data.length();
+    size_t left = strlen(dataPtr);
     ssize_t sent = 0;
     ssize_t totalSent = 0;
     while (left > 0) {
-        sent = ::send(socket, data + sent, dataSize - sent, 0);
+        sent = ::send(socket, dataPtr + sent, dataSize - sent, 0);
         if (sent == -1) {
             utils::log("Unable to send data!");
             return totalSent;
@@ -37,12 +38,12 @@ long ClientHandler::sendRaw(const char* data) {
 }
 
 //TODO: chunk buffer
-void ClientHandler::receiveRaw(long* received, char** receivePtr) {
-    *receivePtr = new char[DEFAULT_REQUEST_BUFFER];
-    ssize_t read = recv(socket, *receivePtr, DEFAULT_REQUEST_BUFFER, 0); //Blocking
-    if (read<0) {
-        std::cout << read << std::endl;
+std::string ClientHandler::receiveRaw() {
+    std::string result;
+    char buffer[DEFAULT_REQUEST_BUFFER];
+    ssize_t read = recv(socket, buffer, DEFAULT_REQUEST_BUFFER, 0); //Blocking
+    if (read > 0) {
+        result.append(buffer, read);
     }
-    (*receivePtr)[read] = '\0';
-    *received = read + 1;
+    return result;
 }

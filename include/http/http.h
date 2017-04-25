@@ -1,6 +1,8 @@
 #ifndef TP_SERVER_HTTP_H
 #define TP_SERVER_HTTP_H
 
+#include <string>
+
 #define METHOD_GET "GET"
 #define METHOD_HEAD "HEAD"
 
@@ -14,11 +16,11 @@
 
 
 namespace http {
-    char* makeResponseHead(const char* status, const char* contentType, ssize_t contentLength,
-                           const char* connection);
-    char* makeResponse(const char* status, const char* contentType, ssize_t contentLength,
-                       const char* connection, const char* body);
-    void parseRequest(const char* request, char** parsedMethod, char** parsedPath);
+    std::string makeResponseHead(const std::string &status, const std::string &contentType, ssize_t contentLength,
+                                 const std::string &connection);
+    std::string makeResponse(const std::string &status, const std::string &contentType, ssize_t contentLength,
+                       const std::string &connection, const std::string &body);
+    void parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath);
 }
 
 #endif //TP_SERVER_HTTP_H

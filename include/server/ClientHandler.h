@@ -12,9 +12,8 @@ private:
 public:
     ClientHandler(int socket);
     ~ClientHandler();
-    int getSocket();
-    long sendRaw(const char* data);
-    void receiveRaw(long* received, char** receivePtr);
+    long sendRaw(const std::string &data);
+    std::string receiveRaw();
 };
 
 

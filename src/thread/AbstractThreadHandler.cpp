@@ -62,4 +62,4 @@ void* AbstractThreadHandler::threadLaunch(void *object) {
 
 void AbstractThreadHandler::threadWork() { };
 
-bool AbstractThreadHandler::isAvalible() { };
+bool AbstractThreadHandler::isAvailable() { };

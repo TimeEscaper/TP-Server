@@ -28,7 +28,7 @@ public:
     bool launch();
     void cancel();
     ThreadState getState();
-    virtual bool isAvalible();
+    virtual bool isAvailable();
 };
 
 

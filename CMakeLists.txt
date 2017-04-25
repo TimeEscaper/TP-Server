@@ -9,3 +9,4 @@ set(SOURCE_FILES src/main.cpp src/server/ClientHandler.cpp include/server/Client
 add_executable(httpd ${SOURCE_FILES})
 
 target_link_libraries (httpd ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(httpd magic)

@@ -9,18 +9,19 @@ class WorkerThread : public AbstractThreadHandler {
 protected:
     ClientHandler *client;
     void threadWork();
-    char* rootDir = new char;
+    std::string rootDir;
+    void processClient();
     struct {
         bool hasWork;
         pthread_mutex_t mutex;
         pthread_cond_t cond;
     } workState;
 public:
-    WorkerThread(const char* rootDir);
+    WorkerThread(const std::string &rootDir);
     ~WorkerThread();
-    char* getRootDir();
+    std::string getRootDir();
     void handleClient(ClientHandler **newClient);
-    bool isAvalible();
+    bool isAvailable();
 };
 
 

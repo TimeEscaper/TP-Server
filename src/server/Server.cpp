@@ -11,7 +11,7 @@
 
 #define CHUNK 256
 
-Server::Server(int port, const char* rootDir) {
+Server::Server(int port, const std::string &rootDir) {
     this->port = port;
     socket = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket <= 0) {
@@ -42,7 +42,7 @@ Server::Server(int port, const char* rootDir) {
         throw std::runtime_error("Unable to bind socket: " + std::string(strerror(errno)));
     }
 
-    strcpy(this->rootDir, rootDir);
+    this->rootDir = rootDir;
     worker = new WorkerThread(rootDir);
     listen(socket, DEFAULT_BACKLOG_SIZE);
 }
@@ -57,15 +57,12 @@ Server::~Server() {
 
 void Server::cleanUp() {
     delete worker;
-    delete rootDir;
 }
 
 int Server::getPort() { return port; }
 
-char* Server::getRootDir() {
-    char* res = new char;
-    strcpy(res, rootDir);
-    return res;
+std::string Server::getRootDir() {
+    return rootDir;
 }
 
 int Server::start() {
