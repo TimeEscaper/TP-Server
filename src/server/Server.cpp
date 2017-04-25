@@ -22,12 +22,12 @@ Server::Server(int port, const char* rootDir) {
     int options = 1;
     setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &options, sizeof(options));
 
-    int currentFlags = fcntl(socket, F_GETFL, 0);
+    /*int currentFlags = fcntl(socket, F_GETFL, 0);
     int setFlags = currentFlags | O_NONBLOCK;
     if (fcntl(socket, F_SETFL, setFlags) == -1) {
         cleanUp();
         throw std::runtime_error("Unable to make socket non-blocking: " + std::string(strerror(errno)));
-    }
+    } */
 
     struct sockaddr_in serverAddr;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -76,17 +76,13 @@ int Server::start() {
     isWorking = true;
 
     while (isWorking) {
-        sleep(1);
-
         struct sockaddr_in clientAddr;
         memset(&clientAddr, 0, sizeof(clientAddr));
         socklen_t clientLen = sizeof(clientAddr);
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
-        if (!((clientSocket == -1) && (errno == EAGAIN))) {
-            ClientHandler client(clientSocket);
-            handleClient(client);
-        }
+        ClientHandler client(clientSocket);
+        handleClient(client);
     }
 
     return 0;

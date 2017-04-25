@@ -4,7 +4,7 @@
 AbstractThreadHandler::AbstractThreadHandler() {
     state = {ThreadState::FREE, PTHREAD_MUTEX_INITIALIZER};
     pthread_mutex_unlock(&state.mutex);
-    int error = pthread_create(&pthread, NULL, threadRoutine, NULL);
+    int error = pthread_create(&pthread, NULL, threadLaunch, NULL);
     if (error != 0) {
         state.state = ThreadState::ERROR;
     }
@@ -44,6 +44,10 @@ void AbstractThreadHandler::cancel() {
     pthread_mutex_unlock(&state.mutex);
 }
 
-void *AbstractThreadHandler::threadRoutine(void *arg) {
-    threadWork();
+void* AbstractThreadHandler::threadLaunch(void *object) {
+    reinterpret_cast<AbstractThreadHandler*>(object)->threadWork();
 }
+
+void AbstractThreadHandler::threadWork() { };
+
+bool AbstractThreadHandler::isAvalible() { };

@@ -18,7 +18,7 @@ protected:
         pthread_mutex_t mutex;
     } state;
     void setState(ThreadState newState);
-    void *threadRoutine(void *arg);
+    static void *threadLaunch(void *object);
     virtual void threadWork();
 
 public:
@@ -26,6 +26,7 @@ public:
     ~AbstractThreadHandler();
     void cancel();
     ThreadState getState();
+    virtual bool isAvalible();
 };
 
 
