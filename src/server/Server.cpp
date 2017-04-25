@@ -43,6 +43,7 @@ Server::Server(int port, const char* rootDir) {
     }
 
     strcpy(this->rootDir, rootDir);
+    worker = new WorkerThread(rootDir);
     listen(socket, DEFAULT_BACKLOG_SIZE);
 }
 
@@ -55,6 +56,7 @@ Server::~Server() {
 }
 
 void Server::cleanUp() {
+    delete worker;
     delete rootDir;
 }
 
@@ -73,6 +75,9 @@ int Server::start() {
     if (isWorking) {
         return 0;
     }
+    if (!worker->launch()) {
+        return 0;
+    }
     isWorking = true;
 
     while (isWorking) {
@@ -81,8 +86,8 @@ int Server::start() {
         socklen_t clientLen = sizeof(clientAddr);
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
-        ClientHandler client(clientSocket);
-        handleClient(client);
+        ClientHandler *client = new ClientHandler(clientSocket);
+        worker->handleClient(&client);
     }
 
     return 0;
@@ -95,54 +100,4 @@ void Server::stop() {
     if (isWorking) {
         isWorking = false;
     }
-}
-
-void Server::handleClient(ClientHandler client) {
-    char* request;
-    long received;
-    client.receiveRaw(&received, &request);
-    if (request == NULL) {
-        return;
-    }
-    char* method;
-    char* path;
-    http::parseRequest(request, &method, &path);
-    if ((method == NULL) || (path == NULL)) {
-        client.sendRaw(HTTP500RAW);
-        delete request, method, path;
-        return;
-    }
-
-    char* fullPath = getRootDir();
-    strcat(fullPath, path);
-    int filed = open(fullPath, O_RDONLY);
-    if (filed <= -1) {
-        client.sendRaw(HTTP404RAW);
-        delete request, method, path, fullPath;
-        return;
-    }
-    struct stat statBuf;
-    if (fstat(filed, &statBuf) != 0) {
-        client.sendRaw(HTTP500RAW);
-        delete request, method, path, fullPath;
-        return;
-    }
-    if (S_ISDIR(statBuf.st_mode)) {
-        client.sendRaw(HTTP404RAW);
-        delete request, method, path, fullPath;
-        return;
-    }
-    ssize_t fileSize = statBuf.st_size;
-    client.sendRaw(http::makeResponseHead(STATUS_OK, "text/html", fileSize, "Closed"));
-
-    char fileBuffer[CHUNK];
-    long readBytes, sentBytes;
-    while ((readBytes =read(filed, fileBuffer, CHUNK)) > 0) {
-        sentBytes = client.sendRaw(fileBuffer);
-        if (sentBytes < readBytes) {
-            break;
-        }
-    }
-    close(filed);
-    delete request, method, path, fullPath;
 }

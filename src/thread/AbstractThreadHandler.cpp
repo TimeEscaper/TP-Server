@@ -2,16 +2,28 @@
 #include "../../include/helpers/utils.h"
 
 AbstractThreadHandler::AbstractThreadHandler() {
-    state = {ThreadState::FREE, PTHREAD_MUTEX_INITIALIZER};
-    pthread_mutex_unlock(&state.mutex);
-    int error = pthread_create(&pthread, NULL, threadLaunch, NULL);
-    if (error != 0) {
-        state.state = ThreadState::ERROR;
-    }
+    state = {ThreadState::INITED, PTHREAD_MUTEX_INITIALIZER};
 }
 
 AbstractThreadHandler::~AbstractThreadHandler() {
     cancel();
+}
+
+bool AbstractThreadHandler::launch() {
+    pthread_mutex_lock(&state.mutex);
+    if (state.state != ThreadState::INITED) {
+        pthread_mutex_unlock(&state.mutex);
+        return false;
+    }
+    int error = pthread_create(&pthread, NULL, threadLaunch, this);
+    if (error != 0) {
+        state.state = ThreadState::ERROR;
+        pthread_mutex_unlock(&state.mutex);
+        return false;
+    }
+    state.state = ThreadState::FREE;
+    pthread_mutex_unlock(&state.mutex);
+    return true;
 }
 
 void AbstractThreadHandler::setState(ThreadState newState) {

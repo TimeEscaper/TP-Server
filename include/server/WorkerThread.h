@@ -5,7 +5,7 @@
 #include "../thread/AbstractThreadHandler.h"
 #include "ClientHandler.h"
 
-class WorkerThread : AbstractThreadHandler {
+class WorkerThread : public AbstractThreadHandler {
 protected:
     ClientHandler *client;
     void threadWork();

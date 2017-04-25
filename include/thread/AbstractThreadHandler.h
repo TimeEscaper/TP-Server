@@ -4,6 +4,7 @@
 #include <pthread.h>
 
 typedef enum {
+    INITED,
     ERROR,
     FREE,
     BUSY,
@@ -24,6 +25,7 @@ protected:
 public:
     AbstractThreadHandler();
     ~AbstractThreadHandler();
+    bool launch();
     void cancel();
     ThreadState getState();
     virtual bool isAvalible();

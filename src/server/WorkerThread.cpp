@@ -2,6 +2,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <cstring>
+#include <iostream>
 #include "../../include/server/WorkerThread.h"
 #include "../../include/thread/AbstractThreadHandler.h"
 #include "../../include/http/http.h"
@@ -10,7 +11,7 @@
 
 WorkerThread::WorkerThread(const char *rootDir) {
     strcpy(this->rootDir, rootDir);
-    workState = {false, PTHREAD_MUTEX_INITIALIZER};
+    workState = {false, PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER};
 }
 
 WorkerThread::~WorkerThread() {
@@ -46,12 +47,13 @@ bool WorkerThread::isAvalible() {
 }
 
 void WorkerThread::threadWork() {
+    int id = 1;
     while (true) {
         pthread_mutex_lock(&workState.mutex);
         while (!workState.hasWork) {
             pthread_cond_wait(&workState.cond, &workState.mutex);
         }
-
+        std::cout << "Thread id: " << id << std::endl;
         char* request;
         long received;
         client->receiveRaw(&received, &request);
@@ -104,6 +106,7 @@ void WorkerThread::threadWork() {
         pthread_mutex_unlock(&workState.mutex);
         pthread_mutex_lock(&state.mutex);
         state.state = ThreadState::FREE;
+        workState.hasWork = false;
         pthread_mutex_unlock(&state.mutex);
     }
 }

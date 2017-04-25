@@ -3,6 +3,7 @@
 
 #include <thread>
 #include "ClientHandler.h"
+#include "WorkerThread.h"
 
 #define DEFAULT_BACKLOG_SIZE 10
 
@@ -15,6 +16,7 @@ private:
     bool isWorking = false;
     void cleanUp();
     void handleClient(ClientHandler client); //Temp method
+    WorkerThread *worker;
 
 public:
     Server(int port, const char* rootDir);
