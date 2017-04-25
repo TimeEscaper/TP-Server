@@ -77,12 +77,12 @@ void WorkerThread::processClient() {
 
     ssize_t fileSize = statBuf.st_size;
     std::string mimeType = utils::getMimeType(fullPath);
-    client->sendRaw(http::makeResponseHead(STATUS_OK, mimeType, fileSize, "Closed"));
+    client->sendRaw(http::makeResponseHead(STATUS_OK, mimeType, fileSize, "Closed").c_str());
 
     char fileBuffer[CHUNK];
     long readBytes, sentBytes;
     while ((readBytes = read(filed, fileBuffer, CHUNK)) > 0) {
-        sentBytes = client->sendRaw(fileBuffer);
+        sentBytes = client->sendRaw(fileBuffer, readBytes);
         if (sentBytes < readBytes) {
             break;
         }

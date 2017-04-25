@@ -13,6 +13,7 @@ public:
     ClientHandler(int socket);
     ~ClientHandler();
     long sendRaw(const std::string &data);
+    long sendRaw(const char *data, ssize_t dataLength);
     std::string receiveRaw();
 };
 
