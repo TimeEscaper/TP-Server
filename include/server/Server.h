@@ -4,9 +4,11 @@
 #include <thread>
 #include "ClientHandler.h"
 #include "WorkerThread.h"
+#include "WorkerThreadPool.h"
 
 #define DEFAULT_BACKLOG_SIZE 10
-
+#define NCPU_MAX 0
+#define DEFAULT_POOL_SIZE 8
 
 class Server {
 private:
@@ -15,10 +17,10 @@ private:
     std::string rootDir;
     bool isWorking = false;
     void cleanUp();
-    WorkerThread *worker;
+    WorkerThreadPool *threadPool;
 
 public:
-    Server(int port, const std::string &rootDir);
+    Server(int port, const std::string &rootDir, int threadPoolSize, int ncpu);
     ~Server();
     int getPort();
     std::string getRootDir();

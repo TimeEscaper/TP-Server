@@ -6,11 +6,9 @@
 #define ROOT_PATH "/home/sibirsky/static"
 #define SERVER_PORT 3490
 
-Server server(SERVER_PORT, ROOT_PATH);
-
 void *serverThreadWork(void *arg) {
     try {
-        server.start();
+        static_cast<Server*>(arg)->start();
     } catch (std::runtime_error e) {
         std::cout << e.what() << std::endl;
     }
@@ -18,17 +16,24 @@ void *serverThreadWork(void *arg) {
 
 int main(int argc, char* argv[])
 {
-    /*try {
-        std::thread serverThread(serverThreadWork);
-        getchar();
-        server.stop();
-        serverThread.join();
-    } catch (std::runtime_error e) {
-        std::cout << e.what() << std::endl;
-    } */
+    std::string rootPath;
+    int ncpu;
+    for (int i = 0; i < argc; i++) {
+        if (strcmp(argv[i], "-r") == 0) {
+            i++;
+            rootPath = argv[i];
+        } else if (strcmp(argv[i], "-c") == 0) {
+            i++;
+            ncpu = atoi(argv[i]);
+        }
+    }
+    if (rootPath.length() == 0) {
+        rootPath = ROOT_PATH;
+    }
+    Server *server = new Server(SERVER_PORT, rootPath, DEFAULT_POOL_SIZE, ncpu);
     pthread_t pthread;
     int err;
-    err = pthread_create(&pthread, NULL, serverThreadWork, NULL);
+    err = pthread_create(&pthread, NULL, serverThreadWork, server);
     if (err != 0) {
         utils::log("Error creating server thread!");
         return 0;
@@ -47,6 +52,7 @@ int main(int argc, char* argv[])
         return 0;
     }
     utils::log("Server thread detached!");
+    delete server;
 
     return 0;
 }

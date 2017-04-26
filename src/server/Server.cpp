@@ -11,7 +11,7 @@
 
 #define CHUNK 256
 
-Server::Server(int port, const std::string &rootDir) {
+Server::Server(int port, const std::string &rootDir, int threadPoolSize, int ncpu) {
     this->port = port;
     socket = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket <= 0) {
@@ -43,7 +43,7 @@ Server::Server(int port, const std::string &rootDir) {
     }
 
     this->rootDir = rootDir;
-    worker = new WorkerThread(rootDir);
+    threadPool = new WorkerThreadPool(rootDir, threadPoolSize, ncpu);
     listen(socket, DEFAULT_BACKLOG_SIZE);
 }
 
@@ -56,7 +56,7 @@ Server::~Server() {
 }
 
 void Server::cleanUp() {
-    delete worker;
+    delete threadPool;
 }
 
 int Server::getPort() { return port; }
@@ -72,7 +72,7 @@ int Server::start() {
     if (isWorking) {
         return 0;
     }
-    if (!worker->launch()) {
+    if (!threadPool->launchThreads()) {
         return 0;
     }
     isWorking = true;
@@ -84,6 +84,7 @@ int Server::start() {
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
         ClientHandler *client = new ClientHandler(clientSocket);
+        WorkerThread* worker = dynamic_cast<WorkerThread*>(threadPool->getFreeThread());
         worker->handleClient(&client);
     }
 

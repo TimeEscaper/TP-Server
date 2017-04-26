@@ -10,8 +10,9 @@
 
 #define CHUNK 256
 
-WorkerThread::WorkerThread(const std::string &rootDir) {
+WorkerThread::WorkerThread(const std::string &rootDir, int id) {
     this->rootDir = rootDir;
+    this->id = id;
     workState = {false, PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER};
 }
 
@@ -97,6 +98,7 @@ void WorkerThread::threadWork() {
         while (!workState.hasWork) {
             pthread_cond_wait(&workState.cond, &workState.mutex);
         }
+        std::cout << "WorkerId: " << id << std::endl;
         processClient();
         delete client;
         client = NULL;
