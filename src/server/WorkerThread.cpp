@@ -77,8 +77,9 @@ void WorkerThread::processClient() {
     }
 
     ssize_t fileSize = statBuf.st_size;
-    std::string mimeType = mimeUtil.getMimeType(fullPath);
-    client->sendRaw(http::makeResponseHead(STATUS_OK, mimeType, fileSize, "Closed").c_str());
+    std::string mimeType = util.getMimeType(fullPath);
+    std::string date = util.getDateTime();
+    client->sendRaw(http::makeResponseHead(STATUS_OK, date, mimeType, fileSize, "Closed").c_str());
 
     char fileBuffer[CHUNK];
     long readBytes, sentBytes;

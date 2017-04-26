@@ -16,9 +16,11 @@
 
 
 namespace http {
-    std::string makeResponseHead(const std::string &status, const std::string &contentType, ssize_t contentLength,
+    std::string makeResponseHead(const std::string &status, const std::string &date,
+                                 const std::string &contentType, ssize_t contentLength,
                                  const std::string &connection);
-    std::string makeResponse(const std::string &status, const std::string &contentType, ssize_t contentLength,
+    std::string makeResponse(const std::string &status, const std::string &date,
+                             const std::string &contentType, ssize_t contentLength,
                        const std::string &connection, const std::string &body);
     void parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath);
 }
