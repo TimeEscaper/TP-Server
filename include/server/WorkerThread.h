@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "../thread/AbstractThreadHandler.h"
 #include "ClientHandler.h"
+#include "../helpers/MimeUtil.h"
 
 class WorkerThread : public AbstractThreadHandler {
 protected:
@@ -11,6 +12,7 @@ protected:
     void threadWork();
     std::string rootDir;
     int id;
+    utils::MimeUtil mimeUtil;
     void processClient();
     struct {
         bool hasWork;
