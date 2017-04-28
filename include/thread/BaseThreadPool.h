@@ -7,7 +7,6 @@
 class BaseThreadPool {
 protected:
     int size;
-    int ncpu;
     std::vector<AbstractThreadHandler*> threads;
 
 public:

@@ -14,6 +14,7 @@ typedef enum {
 class AbstractThreadHandler {
 protected:
     pthread_t pthread;
+    int cpu = -1;
     struct {
         ThreadState state;
         pthread_mutex_t mutex;
@@ -24,6 +25,7 @@ protected:
 
 public:
     AbstractThreadHandler();
+    AbstractThreadHandler(int cpu);
     ~AbstractThreadHandler();
     bool launch();
     void cancel();

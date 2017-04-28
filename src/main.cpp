@@ -17,7 +17,7 @@ void *serverThreadWork(void *arg) {
 int main(int argc, char* argv[])
 {
     std::string rootPath;
-    int ncpu;
+    int ncpu = 0;
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "-r") == 0) {
             i++;

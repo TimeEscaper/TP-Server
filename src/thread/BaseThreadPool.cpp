@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "../../include/thread/BaseThreadPool.h"
 
 BaseThreadPool::BaseThreadPool() { };

@@ -1,5 +1,15 @@
+#include <unistd.h>
 #include "../../include/thread/AbstractThreadHandler.h"
 #include "../../include/helpers/utils.h"
+
+AbstractThreadHandler::AbstractThreadHandler(int cpu) {
+    long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
+    //TODO: add exception
+    if ((cpu >= 0) && (cpu < cpuCount)) {
+        this->cpu = cpu;
+    }
+    state = {ThreadState::INITED, PTHREAD_MUTEX_INITIALIZER};
+}
 
 AbstractThreadHandler::AbstractThreadHandler() {
     state = {ThreadState::INITED, PTHREAD_MUTEX_INITIALIZER};
@@ -15,11 +25,24 @@ bool AbstractThreadHandler::launch() {
         pthread_mutex_unlock(&state.mutex);
         return false;
     }
-    int error = pthread_create(&pthread, NULL, threadLaunch, this);
+    int error = 0;
+    error = pthread_create(&pthread, NULL, threadLaunch, this);
     if (error != 0) {
         state.state = ThreadState::ERROR;
         pthread_mutex_unlock(&state.mutex);
         return false;
+    }
+    if (cpu != -1) {
+        cpu_set_t cpuSet;
+        CPU_ZERO(&cpuSet);
+        CPU_SET(cpu, &cpuSet);
+        error = pthread_setaffinity_np(pthread, sizeof(cpu_set_t), &cpuSet);
+        if (error != 0) {
+            utils::log("Unable to set cpu affinity for thread!");
+            state.state = ThreadState::ERROR;
+            pthread_mutex_unlock(&state.mutex);
+            return false;
+        }
     }
     state.state = ThreadState::FREE;
     pthread_mutex_unlock(&state.mutex);

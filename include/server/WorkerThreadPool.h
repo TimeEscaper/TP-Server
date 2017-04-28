@@ -9,8 +9,10 @@ class WorkerThreadPool : public BaseThreadPool {
 protected:
     void addThread();
     std::string rootDir;
+    long ncpu;
 public:
     WorkerThreadPool(std::string rootDir, int size, int ncpu);
+    WorkerThreadPool(std::string rootDir, int size);
 };
 
 

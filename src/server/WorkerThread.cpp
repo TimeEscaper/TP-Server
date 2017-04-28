@@ -10,6 +10,12 @@
 
 #define CHUNK 256
 
+WorkerThread::WorkerThread(const std::string &rootDir, int id, int cpu) : AbstractThreadHandler(cpu) {
+    this->rootDir = rootDir;
+    this->id = id;
+    workState = {false, PTHREAD_MUTEX_INITIALIZER, PTHREAD_COND_INITIALIZER};
+}
+
 WorkerThread::WorkerThread(const std::string &rootDir, int id) {
     this->rootDir = rootDir;
     this->id = id;
@@ -99,7 +105,7 @@ void WorkerThread::threadWork() {
         while (!workState.hasWork) {
             pthread_cond_wait(&workState.cond, &workState.mutex);
         }
-        std::cout << "WorkerId: " << id << std::endl;
+        //std::cout << "WorkerId: " << id << " CPU: " << cpu << std::endl;
         processClient();
         delete client;
         client = NULL;

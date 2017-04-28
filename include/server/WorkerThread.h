@@ -20,6 +20,7 @@ protected:
         pthread_cond_t cond;
     } workState;
 public:
+    WorkerThread(const std::string &rootDir, int id, int cpu);
     WorkerThread(const std::string &rootDir, int id);
     ~WorkerThread();
     std::string getRootDir();
