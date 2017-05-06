@@ -6,6 +6,9 @@ std::string utils::Util::getMimeType(std::string &filePath) {
     if (pos != std::string::npos) {
         std::string extension = filePath.substr(pos+1, filePath.length()-pos);
         result = mimeTypes[extension];
+        if (result.length() == 0) {
+            result = "application/octet-stream";
+        }
     }
     return result;
 }
