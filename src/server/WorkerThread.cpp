@@ -65,6 +65,9 @@ void WorkerThread::processClient() {
         return;
     }
 
+    if (path[path.length()-1] == '/') {
+        path.append("index.html");
+    }
     std::string fullPath = getRootDir();
     fullPath.append(path);
     int filed = open(fullPath.c_str(), O_RDONLY);
