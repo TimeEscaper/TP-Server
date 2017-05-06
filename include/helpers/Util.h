@@ -10,7 +10,7 @@
 namespace utils {
     class Util {
     private:
-        std::map<const char*, const char*> mimeTypes = {{"js", "application/javascript"}, {"html", "text/html"}, {"htm", "text/html"},
+        std::map<std::string, std::string> mimeTypes = {{"js", "application/javascript"}, {"html", "text/html"}, {"htm", "text/html"},
                                                         {"css", "text/css"}, {"jpg", "image/jpeg"}, {"jpeg", "image/jpeg"}, {"png", "image/png"},
                                                         {"gif", "image/gif"}, {"swf", "application/x-shockwave-flash"}};
     public:
