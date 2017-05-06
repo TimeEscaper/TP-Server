@@ -61,7 +61,11 @@ void WorkerThread::processClient() {
     std::string path;
     http::parseRequest(request, method, path);
     if ((method.length() == 0) || (path.length() == 0)) {
-        client->sendRaw(HTTP500RAW);
+        client->sendRaw(HTTP400RAW);
+        return;
+    }
+    if ((method != METHOD_GET) && (method != METHOD_HEAD)) {
+        client->sendRaw(HTTP405RAW);
         return;
     }
 
@@ -89,13 +93,14 @@ void WorkerThread::processClient() {
     std::string mimeType = util.getMimeType(fullPath);
     std::string date = util.getDateTime();
     client->sendRaw(http::makeResponseHead(STATUS_OK, date, mimeType, fileSize, "Closed").c_str());
-
-    char fileBuffer[CHUNK];
-    long readBytes, sentBytes;
-    while ((readBytes = read(filed, fileBuffer, CHUNK)) > 0) {
-        sentBytes = client->sendRaw(fileBuffer, readBytes);
-        if (sentBytes < readBytes) {
-            break;
+    if (method != METHOD_HEAD) {
+        char fileBuffer[CHUNK];
+        long readBytes, sentBytes;
+        while ((readBytes = read(filed, fileBuffer, CHUNK)) > 0) {
+            sentBytes = client->sendRaw(fileBuffer, readBytes);
+            if (sentBytes < readBytes) {
+                break;
+            }
         }
     }
 

@@ -5,21 +5,12 @@
 #include "../../include/helpers/utils.h"
 
 void http::parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath) {
-    char method[4];
     int i = 0;
-    while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') && (request[i] != '\n') && (i <= 3)) {
-        method[i] = request[i];
+    while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') && (request[i] != '\n')) {
+        parsedMethod += request[i];
         i++;
     }
-    method[i] = '\0';
-    if ((request[i] == '\0') || (i > 3)) {
-        return;
-    }
-    if (strcmp(method, METHOD_GET) == 0) {
-        parsedMethod = METHOD_GET;
-    } else if (strcmp(method, METHOD_HEAD) == 0) {
-        parsedMethod = METHOD_HEAD;
-    } else {
+    if ((request[i] == '\0')) {
         return;
     }
 
