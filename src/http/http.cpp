@@ -54,13 +54,13 @@ void http::parseRequest(const std::string &request, std::string &parsedMethod, s
 std::string http::makeResponseHead(const std::string &status, const std::string &date,
                                    const std::string &contentType, ssize_t contentLength,
                              const std::string &connection) {
-    return (status + "Date: " + date + "\r\nServer: tp-server\r\nContent-Type: " + contentType + "\r\nContent-Length: " +
+    return (status + "Date: " + date + "\r\nServer: " + SERVER_NAME + "\r\nContent-Type: " + contentType + "\r\nContent-Length: " +
             std::to_string(contentLength) + "\r\nConnection: " + connection + "\r\n\r\n");
 }
 
 std::string http::makeResponse(const std::string &status, const std::string &date,
                                const std::string &contentType, ssize_t contentLength,
                           const std::string &connection, const std::string &body) {
-    return (status + "Date: " + date + "\r\nServer: tp-server\r\nContent-Type: " + contentType + "\r\nContent-Length: " +
+    return (status + "Date: " + date + "\r\nServer: " + SERVER_NAME + "\r\nContent-Type: " + contentType + "\r\nContent-Length: " +
             std::to_string(contentLength) + "\r\nConnection: " + connection + "\r\n\r\n" + body);
 }
