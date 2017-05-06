@@ -5,7 +5,7 @@
 #include "../../include/helpers/utils.h"
 
 void http::parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath) {
-    int i = 0;
+    unsigned int i = 0;
     while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') && (request[i] != '\n')) {
         parsedMethod += request[i];
         i++;
@@ -16,7 +16,9 @@ void http::parseRequest(const std::string &request, std::string &parsedMethod, s
 
     i++;
     int copyStart = i;
-    while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') && (request[i] != '\n')) {
+    //TODO: improve
+    while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') &&
+            (request[i] != '\n') && (request[i] != '?')) {
         i++;
     }
     int copyEnd = i;
