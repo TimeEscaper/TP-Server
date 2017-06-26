@@ -28,11 +28,21 @@ void BaseThreadPool::cancelThreads() {
 }
 
 AbstractThreadHandler* BaseThreadPool::getFreeThread() {
-    while (true) {
-        for (int i = 0; i < threads.size(); i++) {
-            if (threads[i]->isAvailable()) {
-                return threads[i];
-            }
+    if (threads[currentFreeThread]->isAvailable()) {
+        int ret = currentFreeThread;
+        currentFreeThread++;
+        if (currentFreeThread >= threads.size()) {
+            currentFreeThread = 0;
         }
+        return threads[ret];
+    }
+    while (true) {
+        while (currentFreeThread < threads.size()) {
+            if (threads[currentFreeThread]->isAvailable()) {
+                return threads[currentFreeThread++];
+            }
+            currentFreeThread++;
+        }
+        currentFreeThread = 0;
     }
 }

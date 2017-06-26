@@ -5,7 +5,7 @@
 
 typedef enum {
     INITED,
-    ERROR,
+    FAILED,
     FREE,
     BUSY,
     CANCELLED
@@ -15,11 +15,7 @@ class AbstractThreadHandler {
 protected:
     pthread_t pthread;
     int cpu = -1;
-    struct {
-        ThreadState state;
-        pthread_mutex_t mutex;
-    } state;
-    void setState(ThreadState newState);
+    ThreadState state;
     static void *threadLaunch(void *object);
     virtual void threadWork();
 
@@ -30,7 +26,7 @@ public:
     bool launch();
     void cancel();
     ThreadState getState();
-    virtual bool isAvailable();
+    bool isAvailable();
 };
 
 

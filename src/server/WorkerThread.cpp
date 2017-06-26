@@ -8,6 +8,8 @@
 #include "../../include/http/http.h"
 #include "../../include/helpers/utils.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-noreturn"
 #define CHUNK 256
 
 WorkerThread::WorkerThread(const std::string &rootDir, int id, int cpu) : AbstractThreadHandler(cpu) {
@@ -33,23 +35,14 @@ std::string WorkerThread::getRootDir() {
 }
 
 void WorkerThread::handleClient(ClientHandler **newClient) {
-    pthread_mutex_lock(&state.mutex);
-    if (state.state == ThreadState::FREE) {
+    if (state == ThreadState::FREE) {
         client = *newClient;
-        state.state = ThreadState::BUSY;
+        state = ThreadState::BUSY;
         pthread_mutex_lock(&workState.mutex);
         workState.hasWork = true;
         pthread_cond_signal(&workState.cond);
         pthread_mutex_unlock(&workState.mutex);
     }
-    pthread_mutex_unlock(&state.mutex);
-}
-
-bool WorkerThread::isAvailable() {
-    pthread_mutex_lock(&state.mutex);
-    bool avalible = state.state == ThreadState::FREE;
-    pthread_mutex_unlock(&state.mutex);
-    return avalible;
 }
 
 void WorkerThread::processClient() {
@@ -117,10 +110,9 @@ void WorkerThread::threadWork() {
         processClient();
         delete client;
         client = NULL;
-        pthread_mutex_lock(&state.mutex);
-        state.state = ThreadState::FREE;
+        state = ThreadState::FREE;
         workState.hasWork = false;
-        pthread_mutex_unlock(&state.mutex);
         pthread_mutex_unlock(&workState.mutex);
     }
 }
+#pragma clang diagnostic pop

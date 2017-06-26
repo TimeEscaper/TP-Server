@@ -7,6 +7,7 @@
 class BaseThreadPool {
 protected:
     int size;
+    int currentFreeThread = 0;
     std::vector<AbstractThreadHandler*> threads;
 
 public:

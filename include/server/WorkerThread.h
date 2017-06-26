@@ -25,7 +25,6 @@ public:
     ~WorkerThread();
     std::string getRootDir();
     void handleClient(ClientHandler **newClient);
-    bool isAvailable();
 };
 
 
