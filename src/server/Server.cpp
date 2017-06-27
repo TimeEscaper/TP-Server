@@ -79,7 +79,7 @@ int Server::start() {
         ClientHandler *client = new ClientHandler(clientSocket);
 
         ClientHandleTask *task = new ClientHandleTask(&client, rootDir);
-        threadPool->pushTask(&task);
+        threadPool->pushTask((IThreadTask**)&task);
     }
 
     return 0;

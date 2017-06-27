@@ -3,6 +3,13 @@
 
 #include "../../include/http/http.h"
 
+std::map<std::string, std::string> Http::mimeTypes = {{"js", "application/javascript"},
+                                                      {"html", "text/html"}, {"htm", "text/html"},
+                                                      {"css", "text/css"}, {"jpg", "image/jpeg"},
+                                                      {"jpeg", "image/jpeg"}, {"png", "image/png"},
+                                                      {"gif", "image/gif"},
+                                                      {"swf", "application/x-shockwave-flash"}};
+
 void Http::parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath) {
     unsigned int i = 0;
     while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') && (request[i] != '\n')) {

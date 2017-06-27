@@ -9,7 +9,7 @@
 #define DEFAULT_CPU_AFFINITY -1
 
 class ThreadPool {
-public
+public:
     ThreadPool(size_t size);
     ThreadPool(size_t  size, int ncpu);
     ~ThreadPool();
@@ -19,7 +19,7 @@ private:
     size_t poolSize;
     int usedCpuCount;
     bool needStop = false;
-    pthread_t threads[];
+    pthread_t *threads;
 
     pthread_cond_t threadCond = PTHREAD_COND_INITIALIZER;
     struct {
