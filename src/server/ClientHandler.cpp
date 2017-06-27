@@ -3,8 +3,8 @@
 #include <iostream>
 #include <cstring>
 #include "../../include/server/ClientHandler.h"
-#include "../../include/helpers/utils.h"
 #include "../../include/server/Server.h"
+#include "../../include/logging/utils.h"
 
 ClientHandler::ClientHandler(int socket) {
     if (socket <= 0) {
@@ -28,7 +28,7 @@ long ClientHandler::sendRaw(const std::string &data) {
     while (left > 0) {
         sent = ::send(socket, dataPtr + sent, dataSize - sent, 0);
         if (sent == -1) {
-            utils::log("Unable to send data!");
+            log::debug("Unable to send data!");
             return totalSent;
         }
         left -= sent;
@@ -44,7 +44,7 @@ long ClientHandler::sendRaw(const char *data, ssize_t dataLength) {
     while (left > 0) {
         sent = ::send(socket, data + sent, dataLength - sent, 0);
         if (sent == -1) {
-            utils::log("Unable to send data!");
+            log::debug("Unable to send data!");
             return totalSent;
         }
         left -= sent;

@@ -6,10 +6,10 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "../../include/server/Server.h"
-#include "../../include/helpers/utils.h"
 #include "../../include/http/http.h"
 #include "../../include/server/ClientHandler.h"
 #include "../../include/server/ClientHandleTask.h"
+#include "../../include/logging/utils.h"
 
 #define CHUNK 256
 
@@ -51,7 +51,7 @@ Server::Server(int port, const std::string &rootDir, int threadPoolSize, int ncp
 }
 
 Server::~Server() {
-    utils::log("~Server()");
+    log::log("~Server()");
     cleanUp();
     if (socket > 0) {
         close(socket);

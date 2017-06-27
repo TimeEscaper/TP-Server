@@ -1,10 +1,12 @@
 #include <iostream>
 #include <thread>
+#include <cstring>
 #include "../include/server/Server.h"
-#include "../include/helpers/utils.h"
+#include "../include/logging/utils.h"
 
 #define ROOT_PATH "/home/sibirsky/static"
 #define SERVER_PORT 3490
+#define DEFAULT_POOL_SIZE 16
 
 void *serverThreadWork(void *arg) {
     try {
@@ -35,23 +37,23 @@ int main(int argc, char* argv[])
     int err;
     err = pthread_create(&pthread, NULL, serverThreadWork, server);
     if (err != 0) {
-        utils::log("Error creating server thread!");
+        log::log("Error creating server thread!");
         return 0;
     }
-    utils::log("Server thread created!");
+    log::log("Server thread created!");
     getchar();
     err = pthread_cancel(pthread);
     if (err != 0) {
-        utils::log("Error cancelling thread!");
+        log::log("Error cancelling thread!");
         return 0;
     }
-    utils::log("Server thread cancelled!");
+    log::log("Server thread cancelled!");
     err = pthread_detach(pthread);
     if (err != 0) {
-        utils::log("Error detaching server!");
+        log::log("Error detaching server!");
         return 0;
     }
-    utils::log("Server thread detached!");
+    log::log("Server thread detached!");
     delete server;
 
     return 0;

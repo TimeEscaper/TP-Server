@@ -2,7 +2,6 @@
 #include <cstring>
 
 #include "../../include/http/http.h"
-#include "../../include/helpers/utils.h"
 
 void Http::parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath) {
     unsigned int i = 0;
