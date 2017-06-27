@@ -2,24 +2,32 @@
 #include <pthread.h>
 #include "../../include/thread/ThreadPool.h"
 
+#define DEFAULT_CPU_AFFINITY -1
+
+int ThreadPool::createThread(ThreadPool *owner) {
+    PooledThread *thread = new PooledThread(allThreads.size() + 1, owner);
+    allThreads.push_back(thread);
+    return thread->getId();
+}
+
+int ThreadPool::createThread(ThreadPool *owner, int cpu) {
+    PooledThread *thread = new PooledThread(allThreads.size() + 1, cpu, owner);
+    allThreads.push_back(thread);
+    return thread->getId();
+}
+
 ThreadPool::ThreadPool(size_t size) {
     poolSize = size;
     //TODO: check on null
     usedCpuCount = (int)sysconf(_SC_NPROCESSORS_ONLN);
-    threads = new pthread_t[poolSize];
-    int error = 0;
+    ownedThreads = new int[poolSize];
+    int id = 0;
     int cpu = 0;
     for (int i = 0; i < poolSize; i++) {
-        error = pthread_create(&threads[i], NULL, threadLoop, this);
+        id = ThreadPool::createThread(this, cpu);
         //TODO: throw exception if error
-        if (error == 0) {
-            if (usedCpuCount != DEFAULT_CPU_AFFINITY) {
-                cpu_set_t cpuSet;
-                CPU_ZERO(&cpuSet);
-                CPU_SET(cpu, &cpuSet);
-                //TODO: log if error
-                error = pthread_setaffinity_np(threads[i], sizeof(cpuSet), &cpuSet);
-            }
+        if (id != -1) {
+            ownedThreads[i] = id;
             cpu++;
             if (cpu >= usedCpuCount) {
                 cpu = 0;
@@ -31,7 +39,7 @@ ThreadPool::ThreadPool(size_t size) {
 ThreadPool::ThreadPool(size_t size, int ncpu) {
     poolSize = size;
     //TODO: check on null
-    if (ncpu == -1) {
+    if (ncpu == DEFAULT_CPU_AFFINITY) {
         usedCpuCount = DEFAULT_CPU_AFFINITY;
     } else {
         long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
@@ -43,33 +51,39 @@ ThreadPool::ThreadPool(size_t size, int ncpu) {
         }
     }
 
-    threads = new pthread_t[poolSize];
-    int error = 0;
+    ownedThreads = new int[poolSize];
+    int id = 0;
     int cpu = 0;
     for (int i = 0; i < poolSize; i++) {
-        error = pthread_create(&threads[i], NULL, threadLoop, this);
-        //TODO: throw exception if error
-        if (error == 0) {
-            if (usedCpuCount != DEFAULT_CPU_AFFINITY) {
-                cpu_set_t cpuSet;
-                CPU_ZERO(&cpuSet);
-                CPU_SET(cpu, &cpuSet);
-                //TODO: log if error
-                error = pthread_setaffinity_np(threads[i], sizeof(cpuSet), &cpuSet);
+        if (usedCpuCount != DEFAULT_CPU_AFFINITY) {
+            id = ThreadPool::createThread(this, cpu);
+            //TODO: throw exception if error
+            if (id != -1) {
+                ownedThreads[i] = id;
+                cpu++;
+                if (cpu >= usedCpuCount) {
+                    cpu = 0;
+                }
             }
-            cpu++;
-            if (cpu >= usedCpuCount) {
-                cpu = 0;
+        } else {
+            id = ThreadPool::createThread(this, cpu);
+            //TODO: throw exception if error
+            if (id != -1) {
+                ownedThreads[i] = id;
             }
         }
     }
+
 }
 
 ThreadPool::~ThreadPool() {
-    if (!needStop) {
+    if (!stop) {
         cancelThreads();
     }
-    delete[] threads;
+    for (int i = 0; i < poolSize; i++) {
+        delete ThreadPool::allThreads[ownedThreads[i]];
+    }
+    delete[] ownedThreads;
 }
 
 void ThreadPool::pushTask(IThreadTask **task) {
@@ -79,36 +93,74 @@ void ThreadPool::pushTask(IThreadTask **task) {
     pthread_cond_signal(&threadCond);
 }
 
-void ThreadPool::threadLoop() {
+void ThreadPool::cancelThreads() {
+    pthread_mutex_lock(&tasksQueue.mutex);
+    stop = true;
+    pthread_mutex_unlock(&tasksQueue.mutex);
+    pthread_cond_broadcast(&threadCond);
+
+    for (int i = 0; i < poolSize; i++) {
+        ThreadPool::allThreads[ownedThreads[i]]->join();
+    }
+}
+
+void *ThreadPool::PooledThread::pthreadWrap(void *object) {
+    reinterpret_cast<PooledThread*>(object)->threadLoop();
+}
+
+ThreadPool::PooledThread::PooledThread(int id, const ThreadPool *owner) {
+    this->id = id;
+    this->owner = owner;
+
+    //TODO: throw exception
+    int error = pthread_create(&pthread, NULL, PooledThread::pthreadWrap, this);
+}
+
+ThreadPool::PooledThread::PooledThread(int id, int cpu, const ThreadPool *owner) {
+    this->id = id;
+    this->owner = owner;
+
+    //TODO: throw exception
+    int error = pthread_create(&pthread, NULL, PooledThread::pthreadWrap, this);
+
+    cpu_set_t cpuSet;
+    CPU_ZERO(&cpuSet);
+    CPU_SET(cpu, &cpuSet);
+    //TODO: check on error
+    error = pthread_setaffinity_np(pthread, sizeof(cpu_set_t), &cpuSet);
+}
+
+int ThreadPool::PooledThread::getId() {
+    return id;
+}
+
+bool ThreadPool::PooledThread::isJoined() {
+    return joined;
+}
+
+void ThreadPool::PooledThread::join() {
+    pthread_join(joined, NULL);
+    joined = true;
+}
+
+void ThreadPool::PooledThread::threadLoop() {
     while (true) {
-        pthread_mutex_lock(&tasksQueue.mutex);
-        while ((!needStop) && (tasksQueue.queue.empty())) {
-            pthread_cond_wait(&threadCond, &tasksQueue.mutex);
+        pthread_mutex_lock(&owner->tasksQueue.mutex);
+        while ((!owner->stop) && (owner->tasksQueue.queue.empty())) {
+            pthread_cond_wait(&owner->threadCond, &owner->tasksQueue.mutex);
         }
 
-        if (needStop) {
-            pthread_mutex_unlock(&tasksQueue.mutex);
+        if (owner->stop) {
+            pthread_mutex_unlock(&owner->tasksQueue.mutex);
             return;
         }
 
-        IThreadTask* task = tasksQueue.queue.front();
-        tasksQueue.queue.pop();
-        pthread_mutex_unlock(&tasksQueue.mutex);
+        IThreadTask* task = owner->tasksQueue.queue.front();
+        owner->tasksQueue.queue.pop();
+        pthread_mutex_unlock(&owner->tasksQueue.mutex);
 
         task->execute();
         delete task;
     }
 }
-
-void ThreadPool::cancelThreads() {
-    pthread_mutex_lock(&tasksQueue.mutex);
-    needStop = true;
-    pthread_mutex_unlock(&tasksQueue.mutex);
-    pthread_cond_broadcast(&threadCond);
-
-    for (int i = 0; i < poolSize; i++) {
-        pthread_join(threads[i], NULL);
-    }
-}
-
 #pragma clang diagnostic pop
