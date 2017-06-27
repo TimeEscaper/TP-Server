@@ -12,9 +12,9 @@
 
 class Server {
 private:
+    static std::string rootDir;
     int port;
     int socket;
-    std::string rootDir;
     bool isWorking = false;
     void cleanUp();
     WorkerThreadPool *threadPool;
@@ -23,7 +23,8 @@ public:
     Server(int port, const std::string &rootDir, int threadPoolSize, int ncpu);
     ~Server();
     int getPort();
-    std::string getRootDir();
+    static std::string getRootDir();
+    static std::string setRootDir(std::string& rootDir);
     int start(); //int type for using with thread
     void stop();
     //void restart();
