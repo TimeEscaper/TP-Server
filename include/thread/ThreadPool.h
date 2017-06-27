@@ -14,39 +14,35 @@ public:
     void pushTask(IThreadTask **task);
 
 private:
-    static std::vector<PooledThread*> allThreads;
+    class PooledThread;
 
     size_t poolSize;
     int usedCpuCount;
     bool stop = false;
+    //TODO: compare performance to array
+    std::vector<ThreadPool::PooledThread*> threads;
     pthread_cond_t threadCond = PTHREAD_COND_INITIALIZER;
     struct {
         std::queue<IThreadTask*> queue;
         pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
     } tasksQueue;
-    int ownedThreads[];
-
-    static int createThread(ThreadPool *owner);
-    static int createThread(ThreadPool *owner, int cpu);
 
     void cancelThreads();
 
-    friend class ThreadPool::PooledThread;
+    friend ThreadPool::PooledThread;
 
     class PooledThread {
     public:
-        PooledThread(int id, const ThreadPool *owner);
-        PooledThread(int id, int cpu, const ThreadPool *owner);
-        ~PooledThread();
+        PooledThread(int id, ThreadPool *owner);
+        PooledThread(int id, int cpu, ThreadPool *owner);
+
         int getId();
-        bool isJoined();
         void join();
 
     private:
         int id;
         pthread_t pthread;
-        bool  joined = false;
-        const ThreadPool *owner;
+        ThreadPool *owner;
 
         static void *pthreadWrap(void *object);
 

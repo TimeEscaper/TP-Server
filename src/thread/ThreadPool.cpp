@@ -4,34 +4,19 @@
 
 #define DEFAULT_CPU_AFFINITY -1
 
-int ThreadPool::createThread(ThreadPool *owner) {
-    PooledThread *thread = new PooledThread(allThreads.size() + 1, owner);
-    allThreads.push_back(thread);
-    return thread->getId();
-}
-
-int ThreadPool::createThread(ThreadPool *owner, int cpu) {
-    PooledThread *thread = new PooledThread(allThreads.size() + 1, cpu, owner);
-    allThreads.push_back(thread);
-    return thread->getId();
-}
-
 ThreadPool::ThreadPool(size_t size) {
     poolSize = size;
     //TODO: check on null
     usedCpuCount = (int)sysconf(_SC_NPROCESSORS_ONLN);
-    ownedThreads = new int[poolSize];
     int id = 0;
     int cpu = 0;
     for (int i = 0; i < poolSize; i++) {
-        id = ThreadPool::createThread(this, cpu);
         //TODO: throw exception if error
-        if (id != -1) {
-            ownedThreads[i] = id;
-            cpu++;
-            if (cpu >= usedCpuCount) {
-                cpu = 0;
-            }
+        threads.push_back(new PooledThread(id, cpu, this));
+        id++;
+        cpu++;
+        if (cpu >= usedCpuCount) {
+            cpu = 0;
         }
     }
 }
@@ -51,26 +36,21 @@ ThreadPool::ThreadPool(size_t size, int ncpu) {
         }
     }
 
-    ownedThreads = new int[poolSize];
     int id = 0;
     int cpu = 0;
     for (int i = 0; i < poolSize; i++) {
         if (usedCpuCount != DEFAULT_CPU_AFFINITY) {
-            id = ThreadPool::createThread(this, cpu);
             //TODO: throw exception if error
-            if (id != -1) {
-                ownedThreads[i] = id;
-                cpu++;
-                if (cpu >= usedCpuCount) {
-                    cpu = 0;
-                }
+            threads.push_back(new PooledThread(id, cpu, this));
+            id++;
+            cpu++;
+            if (cpu >= usedCpuCount) {
+                cpu = 0;
             }
         } else {
-            id = ThreadPool::createThread(this, cpu);
             //TODO: throw exception if error
-            if (id != -1) {
-                ownedThreads[i] = id;
-            }
+            threads.push_back(new PooledThread(id, this));
+            id++;
         }
     }
 
@@ -81,9 +61,8 @@ ThreadPool::~ThreadPool() {
         cancelThreads();
     }
     for (int i = 0; i < poolSize; i++) {
-        delete ThreadPool::allThreads[ownedThreads[i]];
+        delete threads[i];
     }
-    delete[] ownedThreads;
 }
 
 void ThreadPool::pushTask(IThreadTask **task) {
@@ -100,7 +79,7 @@ void ThreadPool::cancelThreads() {
     pthread_cond_broadcast(&threadCond);
 
     for (int i = 0; i < poolSize; i++) {
-        ThreadPool::allThreads[ownedThreads[i]]->join();
+        threads[i]->join();
     }
 }
 
@@ -108,7 +87,7 @@ void *ThreadPool::PooledThread::pthreadWrap(void *object) {
     reinterpret_cast<PooledThread*>(object)->threadLoop();
 }
 
-ThreadPool::PooledThread::PooledThread(int id, const ThreadPool *owner) {
+ThreadPool::PooledThread::PooledThread(int id, ThreadPool *owner) {
     this->id = id;
     this->owner = owner;
 
@@ -116,7 +95,7 @@ ThreadPool::PooledThread::PooledThread(int id, const ThreadPool *owner) {
     int error = pthread_create(&pthread, NULL, PooledThread::pthreadWrap, this);
 }
 
-ThreadPool::PooledThread::PooledThread(int id, int cpu, const ThreadPool *owner) {
+ThreadPool::PooledThread::PooledThread(int id, int cpu, ThreadPool *owner) {
     this->id = id;
     this->owner = owner;
 
@@ -134,13 +113,9 @@ int ThreadPool::PooledThread::getId() {
     return id;
 }
 
-bool ThreadPool::PooledThread::isJoined() {
-    return joined;
-}
 
 void ThreadPool::PooledThread::join() {
-    pthread_join(joined, NULL);
-    joined = true;
+    pthread_join(pthread, NULL);
 }
 
 void ThreadPool::PooledThread::threadLoop() {
