@@ -20,7 +20,7 @@ private:
     int socket;
     std::string rootDir;
     bool isWorking = false;
-    ThreadPool *threadPool
+    ThreadPool *threadPool;
 
     void cleanUp();
 };

@@ -3,8 +3,6 @@
 #include <cstring>
 #include <unistd.h>
 #include <iostream>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include "../../include/server/Server.h"
 #include "../../include/http/http.h"
 #include "../../include/server/ClientHandler.h"
@@ -17,7 +15,6 @@ Server::Server(int port, const std::string &rootDir, int threadPoolSize, int ncp
     this->port = port;
     socket = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (socket <= 0) {
-        cleanUp();
         throw std::runtime_error("Unable to create socket: " + std::string(strerror(errno)));
     }
 
@@ -39,7 +36,6 @@ Server::Server(int port, const std::string &rootDir, int threadPoolSize, int ncp
 
     int binded = bind(socket, (struct sockaddr*)&serverAddr, sizeof(serverAddr));
     if (binded < 0) {
-        cleanUp();
         close(socket);
         throw std::runtime_error("Unable to bind socket: " + std::string(strerror(errno)));
     }
@@ -66,7 +62,6 @@ void Server::cleanUp() {
 
 int Server::start() {
     if (socket <= 0) {
-        cleanUp();
         throw new std::runtime_error("Socket was not handled");
     }
     if (isWorking) {
