@@ -1,7 +1,3 @@
-//
-// Created by sibirsky on 27.06.17.
-//
-
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -11,8 +7,9 @@
 
 #define CHUNK 256
 
-ClientHandleTask::ClientHandleTask(ClientHandler **client) {
+ClientHandleTask::ClientHandleTask(ClientHandler **client, std::string& rootDir) {
     this->client = *client;
+    this->rootDir = rootDir;
 }
 
 ClientHandleTask::~ClientHandleTask() {
@@ -28,7 +25,7 @@ void ClientHandleTask::execute() {
     }
     std::string method;
     std::string path;
-    http::parseRequest(request, method, path);
+    Http::parseRequest(request, method, path);
     if ((method.length() == 0) || (path.length() == 0)) {
         client->sendRaw(HTTP400RAW);
         return;
@@ -41,7 +38,7 @@ void ClientHandleTask::execute() {
     if (path[path.length()-1] == '/') {
         path.append("index.html");
     }
-    std::string fullPath = Server::getRootDir();
+    std::string fullPath = rootDir;
     fullPath.append(path);
     int filed = open(fullPath.c_str(), O_RDONLY);
     if (filed <= -1) {
@@ -59,10 +56,9 @@ void ClientHandleTask::execute() {
     }
 
     ssize_t fileSize = statBuf.st_size;
-    //TODO: rewrite http and utils classes
-    std::string mimeType = "stub"; //util.getMimeType(fullPath);
-    std::string date = "stub"; //util.getDateTime();
-    client->sendRaw(http::makeResponseHead(STATUS_OK, date, mimeType, fileSize, "Closed").c_str());
+    std::string mimeType = Http::getMimeType(fullPath);
+    std::string date = Http::getDateTime();
+    client->sendRaw(Http::makeResponseHead(STATUS_OK, date, mimeType, fileSize, "Closed").c_str());
     if (method != METHOD_HEAD) {
         char fileBuffer[CHUNK];
         long readBytes, sentBytes;

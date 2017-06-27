@@ -1,22 +1,20 @@
-//
-// Created by sibirsky on 27.06.17.
-//
-
 #ifndef TP_SERVER_CLIENTHANDLETASK_H
 #define TP_SERVER_CLIENTHANDLETASK_H
 
 
+#include <string>
 #include "../thread/IThreadTask.h"
 #include "ClientHandler.h"
 
-class ClientHandleTask : IThreadTask{
+class ClientHandleTask : public IThreadTask {
 public:
-    ClientHandleTask(ClientHandler **client);
+    ClientHandleTask(ClientHandler **client, std::string& rootDir);
     ~ClientHandleTask();
     void execute();
 
 private:
     ClientHandler *client;
+    std::string rootDir;
 };
 
 

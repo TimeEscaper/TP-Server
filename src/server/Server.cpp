@@ -8,6 +8,8 @@
 #include "../../include/server/Server.h"
 #include "../../include/helpers/utils.h"
 #include "../../include/http/http.h"
+#include "../../include/server/ClientHandler.h"
+#include "../../include/server/ClientHandleTask.h"
 
 #define CHUNK 256
 
@@ -43,7 +45,8 @@ Server::Server(int port, const std::string &rootDir, int threadPoolSize, int ncp
     }
 
     this->rootDir = rootDir;
-    threadPool = new WorkerThreadPool(rootDir, threadPoolSize, ncpu);
+    threadPool = new ThreadPool(threadPoolSize, ncpu);
+
     listen(socket, DEFAULT_BACKLOG_SIZE);
 }
 
@@ -56,25 +59,20 @@ Server::~Server() {
 }
 
 void Server::cleanUp() {
-    delete threadPool;
-}
-
-int Server::getPort() { return port; }
-
-std::string Server::getRootDir() {
-    return rootDir;
+    if (threadPool != NULL) {
+        delete threadPool;
+    }
 }
 
 int Server::start() {
     if (socket <= 0) {
+        cleanUp();
         throw new std::runtime_error("Socket was not handled");
     }
     if (isWorking) {
         return 0;
     }
-    if (!threadPool->launchThreads()) {
-        return 0;
-    }
+
     isWorking = true;
 
     while (isWorking) {
@@ -84,8 +82,9 @@ int Server::start() {
 
         int clientSocket = accept(socket, (struct sockaddr*)&clientAddr, &clientLen);
         ClientHandler *client = new ClientHandler(clientSocket);
-        WorkerThread* worker = dynamic_cast<WorkerThread*>(threadPool->getFreeThread());
-        worker->handleClient(&client);
+
+        ClientHandleTask *task = new ClientHandleTask(&client, rootDir);
+        threadPool->pushTask(&task);
     }
 
     return 0;

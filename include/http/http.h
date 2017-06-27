@@ -2,6 +2,7 @@
 #define TP_SERVER_HTTP_H
 
 #include <string>
+#include <map>
 
 #define METHOD_GET "GET"
 #define METHOD_HEAD "HEAD"
@@ -20,7 +21,7 @@
 #define HTTP500RAW "HTTP/1.1 500 Internal Server Error\r\nServer: TP-Server\r\nContent-Length: 15\r\nContent-Type: text/plain\r\nConnection: Closed\r\nInternal error!"
 
 
-namespace http {
+/*namespace http {
     std::string makeResponseHead(const std::string &status, const std::string &date,
                                  const std::string &contentType, ssize_t contentLength,
                                  const std::string &connection);
@@ -28,6 +29,30 @@ namespace http {
                              const std::string &contentType, ssize_t contentLength,
                        const std::string &connection, const std::string &body);
     void parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath);
-}
+} */
+
+class Http {
+public:
+    static std::string makeResponseHead(const std::string &status, const std::string &date,
+                                        const std::string &contentType, ssize_t contentLength,
+                                        const std::string &connection);
+
+    static std::string makeResponse(const std::string &status, const std::string &date,
+                                    const std::string &contentType, ssize_t contentLength,
+                                    const std::string &connection, const std::string &body);
+
+    static void parseRequest(const std::string &request, std::string &parsedMethod, std::string &parsedPath);
+
+    static std::string getMimeType(std::string &filePath);
+    static std::string getDateTime();
+
+private:
+    static std::map<std::string, std::string> mimeTypes = {{"js", "application/javascript"},
+                                                           {"html", "text/html"}, {"htm", "text/html"},
+                                                           {"css", "text/css"}, {"jpg", "image/jpeg"},
+                                                           {"jpeg", "image/jpeg"}, {"png", "image/png"},
+                                                           {"gif", "image/gif"},
+                                                           {"swf", "application/x-shockwave-flash"}};
+};
 
 #endif //TP_SERVER_HTTP_H

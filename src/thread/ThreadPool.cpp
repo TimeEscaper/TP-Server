@@ -66,7 +66,9 @@ ThreadPool::ThreadPool(size_t size, int ncpu) {
 }
 
 ThreadPool::~ThreadPool() {
-    cancelThreads();
+    if (!needStop) {
+        cancelThreads();
+    }
     delete[] threads;
 }
 
