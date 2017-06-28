@@ -36,6 +36,8 @@ public:
     static std::string getMimeType(std::string &filePath);
     static std::string getDateTime();
 
+    static std::string urlDecode(std::string& encodedUrl);
+
 private:
     static std::map<std::string, std::string> mimeTypes;
 };

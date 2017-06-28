@@ -37,6 +37,8 @@ void ClientHandleTask::execute() {
         return;
     }
 
+
+
     bool needIndex = false;
     if (path[path.length()-1] == '/') {
         path.append("index.html");
@@ -44,6 +46,11 @@ void ClientHandleTask::execute() {
     }
     std::string fullPath = rootDir;
     fullPath.append(path);
+   /* if (path.find('%') != std::string::npos) {
+        fullPath.append(Http::urlDecode(path));
+    } else {
+        fullPath.append(path);
+    }*/
 
     char absPath[PATH_MAX];
     if (realpath(fullPath.c_str(), absPath) == NULL) {
