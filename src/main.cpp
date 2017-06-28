@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
         throw new std::runtime_error("Root directory required!");
     }
 
-    Server server(SERVER_PORT, rootPath, 1, ncpu);
+    Server server(SERVER_PORT, rootPath, AUTO_POOL_SIZE, ncpu);
     server.start();
 
     return 0;
