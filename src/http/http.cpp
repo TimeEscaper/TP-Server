@@ -23,11 +23,9 @@ void Http::parseRequest(const std::string &request, std::string &parsedMethod, s
     }
 
     i++;
-    int copyStart = i;
     char hex[3];
     int code;
     char currentChar;
-    //TODO: improve
     while ((request[i] != ' ') && (i < request.length()-1) && (request[i] != '\r') &&
             (request[i] != '\n') && (request[i] != '?')) {
         currentChar = request[i];
@@ -45,8 +43,6 @@ void Http::parseRequest(const std::string &request, std::string &parsedMethod, s
         }
         i++;
     }
-    //int copyEnd = i;
-    //parsedPath = request.substr(copyStart, copyEnd - copyStart);
 }
 
 std::string Http::makeResponseHead(const std::string &status, const std::string &date,
@@ -141,23 +137,4 @@ std::string Http::getDateTime() {
     std::string result = buff;
     delete buff;
     return result;
-}
-
-std::string Http::urlDecode(std::string &encodedUrl) {
-    std::ostringstream resultStream;
-    for (int i = 0; i < encodedUrl.length(); i++) {
-        if (encodedUrl[i] == '%') {
-            std::string hexChar(encodedUrl.substr(i+1, 2));
-
-            unsigned short chr = 0;
-            std::istringstream decodeStream(hexChar);
-            decodeStream >> std::hex >> chr;
-            resultStream << static_cast<unsigned char>(chr);
-
-            i += 2;
-        } else {
-            resultStream << encodedUrl[i];
-        }
-    }
-    return resultStream.str();
 }
