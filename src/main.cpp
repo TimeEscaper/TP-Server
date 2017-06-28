@@ -2,11 +2,9 @@
 #include <thread>
 #include <cstring>
 #include "../include/server/Server.h"
-#include "../include/logging/utils.h"
+#include "../include/logging/log.h"
 
-#define ROOT_PATH "/home/sibirsky/static"
 #define SERVER_PORT 3490
-#define DEFAULT_POOL_SIZE 16
 
 void *serverThreadWork(void *arg) {
     try {
@@ -30,31 +28,11 @@ int main(int argc, char* argv[])
         }
     }
     if (rootPath.length() == 0) {
-        rootPath = ROOT_PATH;
+        throw new std::runtime_error("Root directory required!");
     }
-    Server *server = new Server(SERVER_PORT, rootPath, DEFAULT_POOL_SIZE, ncpu);
-    pthread_t pthread;
-    int err;
-    err = pthread_create(&pthread, NULL, serverThreadWork, server);
-    if (err != 0) {
-        log::log("Error creating server thread!");
-        return 0;
-    }
-    log::log("Server thread created!");
-    getchar();
-    err = pthread_cancel(pthread);
-    if (err != 0) {
-        log::log("Error cancelling thread!");
-        return 0;
-    }
-    log::log("Server thread cancelled!");
-    err = pthread_detach(pthread);
-    if (err != 0) {
-        log::log("Error detaching server!");
-        return 0;
-    }
-    log::log("Server thread detached!");
-    delete server;
+
+    Server server(SERVER_PORT, rootPath, AUTO_POOL_SIZE, ncpu);
+    server.start();
 
     return 0;
 }

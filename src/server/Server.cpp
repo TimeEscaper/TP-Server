@@ -7,7 +7,7 @@
 #include "../../include/http/http.h"
 #include "../../include/server/ClientHandler.h"
 #include "../../include/server/ClientHandleTask.h"
-#include "../../include/logging/utils.h"
+#include "../../include/logging/log.h"
 
 #define CHUNK 256
 
@@ -44,10 +44,11 @@ Server::Server(int port, const std::string &rootDir, int threadPoolSize, int ncp
     threadPool = new ThreadPool(threadPoolSize, ncpu);
 
     listen(socket, DEFAULT_BACKLOG_SIZE);
+
+    log::log("Server started on port: " + std::to_string(this->port));
 }
 
 Server::~Server() {
-    log::log("~Server()");
     cleanUp();
     if (socket > 0) {
         close(socket);

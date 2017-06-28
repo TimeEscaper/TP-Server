@@ -4,7 +4,9 @@
 #include <cstring>
 #include "../../include/server/ClientHandler.h"
 #include "../../include/server/Server.h"
-#include "../../include/logging/utils.h"
+#include "../../include/logging/log.h"
+
+#define DEFAULT_REQUEST_BUFFER 1024
 
 ClientHandler::ClientHandler(int socket) {
     if (socket <= 0) {

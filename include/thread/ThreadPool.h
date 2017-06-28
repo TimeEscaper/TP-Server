@@ -6,9 +6,12 @@
 #include <queue>
 #include "IThreadTask.h"
 
+#define AUTO_POOL_SIZE 0
+#define MAX_NCPU 0
+#define DEFAULT_AFFINITY -1
+
 class ThreadPool {
 public:
-    ThreadPool(size_t size);
     ThreadPool(size_t  size, int ncpu);
     ~ThreadPool();
     void pushTask(IThreadTask **task);
@@ -19,7 +22,6 @@ private:
     size_t poolSize;
     int usedCpuCount;
     bool stop = false;
-    //TODO: compare performance to array
     std::vector<ThreadPool::PooledThread*> threads;
     pthread_cond_t threadCond = PTHREAD_COND_INITIALIZER;
     struct {
@@ -37,7 +39,6 @@ private:
         PooledThread(int id, int cpu, ThreadPool *owner);
 
         int getId();
-        void join();
 
     private:
         int id;

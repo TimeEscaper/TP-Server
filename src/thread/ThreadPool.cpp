@@ -1,46 +1,34 @@
 #include <unistd.h>
 #include <pthread.h>
+#include <stdexcept>
+#include <bits/sigthread.h>
 #include "../../include/thread/ThreadPool.h"
-
-#define DEFAULT_CPU_AFFINITY -1
-
-ThreadPool::ThreadPool(size_t size) {
-    poolSize = size;
-    //TODO: check on null
-    usedCpuCount = (int)sysconf(_SC_NPROCESSORS_ONLN);
-    int id = 0;
-    int cpu = 0;
-    for (int i = 0; i < poolSize; i++) {
-        //TODO: throw exception if error
-        threads.push_back(new PooledThread(id, cpu, this));
-        id++;
-        cpu++;
-        if (cpu >= usedCpuCount) {
-            cpu = 0;
-        }
-    }
-}
+#include "../../include/logging/log.h"
 
 ThreadPool::ThreadPool(size_t size, int ncpu) {
-    poolSize = size;
-    //TODO: check on null
-    if (ncpu == DEFAULT_CPU_AFFINITY) {
-        usedCpuCount = DEFAULT_CPU_AFFINITY;
+    int totalCpu = (int)sysconf(_SC_NPROCESSORS_ONLN);
+    if ((size < 0) || (ncpu < -1)) {
+        throw new std::runtime_error("Invalid thread pool input parameters!");
+    }
+    if (ncpu > totalCpu) {
+        throw new std::runtime_error("Ncpu larger than available CPUs!");
+    }
+
+    if (ncpu == MAX_NCPU) {
+        usedCpuCount = totalCpu;
     } else {
-        long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
-        if ((ncpu > 0) && (ncpu <= cpuCount)) {
-            usedCpuCount = ncpu;
-        } else {
-            //TODO: Throw exception
-            usedCpuCount = (int)cpuCount;
-        }
+        usedCpuCount = ncpu;
+    }
+    if (size == AUTO_POOL_SIZE) {
+        poolSize = totalCpu + 1;
+    } else {
+        poolSize = size;
     }
 
     int id = 0;
     int cpu = 0;
     for (int i = 0; i < poolSize; i++) {
-        if (usedCpuCount != DEFAULT_CPU_AFFINITY) {
-            //TODO: throw exception if error
+        if (usedCpuCount != DEFAULT_AFFINITY) {
             threads.push_back(new PooledThread(id, cpu, this));
             id++;
             cpu++;
@@ -48,7 +36,6 @@ ThreadPool::ThreadPool(size_t size, int ncpu) {
                 cpu = 0;
             }
         } else {
-            //TODO: throw exception if error
             threads.push_back(new PooledThread(id, this));
             id++;
         }
@@ -68,8 +55,8 @@ ThreadPool::~ThreadPool() {
 void ThreadPool::pushTask(IThreadTask **task) {
     pthread_mutex_lock(&tasksQueue.mutex);
     tasksQueue.queue.push(*task);
-    pthread_mutex_unlock(&tasksQueue.mutex);
     pthread_cond_signal(&threadCond);
+    pthread_mutex_unlock(&tasksQueue.mutex);
 }
 
 void ThreadPool::cancelThreads() {
@@ -77,10 +64,6 @@ void ThreadPool::cancelThreads() {
     stop = true;
     pthread_mutex_unlock(&tasksQueue.mutex);
     pthread_cond_broadcast(&threadCond);
-
-    for (int i = 0; i < poolSize; i++) {
-        threads[i]->join();
-    }
 }
 
 void *ThreadPool::PooledThread::pthreadWrap(void *object) {
@@ -91,31 +74,43 @@ ThreadPool::PooledThread::PooledThread(int id, ThreadPool *owner) {
     this->id = id;
     this->owner = owner;
 
-    //TODO: throw exception
     int error = pthread_create(&pthread, NULL, PooledThread::pthreadWrap, this);
+    if (error != 0) {
+        throw new std::runtime_error("Error creating thread, thread id: " + std::to_string(id));
+    }
+
+    error = pthread_detach(pthread);
+    if (error != 0) {
+        throw new std::runtime_error("Error detaching thread, thread id: " + std::to_string(id));
+    }
 }
 
 ThreadPool::PooledThread::PooledThread(int id, int cpu, ThreadPool *owner) {
     this->id = id;
     this->owner = owner;
 
-    //TODO: throw exception
     int error = pthread_create(&pthread, NULL, PooledThread::pthreadWrap, this);
+    if (error != 0) {
+        throw new std::runtime_error("Error creating thread, thread id: " + std::to_string(id));
+    }
 
     cpu_set_t cpuSet;
     CPU_ZERO(&cpuSet);
     CPU_SET(cpu, &cpuSet);
-    //TODO: check on error
     error = pthread_setaffinity_np(pthread, sizeof(cpu_set_t), &cpuSet);
+    if (error != 0) {
+        throw new std::runtime_error("Error setting CPU affinity, thread id: " + std::to_string(id) +
+            ", CPU: " + std::to_string(cpu));
+    }
+
+    error = pthread_detach(pthread);
+    if (error != 0) {
+        throw new std::runtime_error("Error detaching thread, thread id: " + std::to_string(id));
+    }
 }
 
 int ThreadPool::PooledThread::getId() {
     return id;
-}
-
-
-void ThreadPool::PooledThread::join() {
-    pthread_join(pthread, NULL);
 }
 
 void ThreadPool::PooledThread::threadLoop() {

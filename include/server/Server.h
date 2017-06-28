@@ -9,7 +9,6 @@
 class Server {
 public:
     Server(int port, const std::string &rootDir, int threadPoolSize, int ncpu);
-    Server(int port, const std::string &rootDir, int threadPoolSize);
     ~Server();
 
     int start(); //int type for using with thread

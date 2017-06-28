@@ -3,8 +3,6 @@
 
 #include <cstddef>
 
-#define DEFAULT_REQUEST_BUFFER 1024
-
 class ClientHandler {
 private:
     int socket;
