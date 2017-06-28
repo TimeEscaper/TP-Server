@@ -1,6 +1,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <libgen.h>
+#include <climits>
 #include "../../include/server/ClientHandleTask.h"
 #include "../../include/http/http.h"
 #include "../../include/server/Server.h"
@@ -40,7 +42,19 @@ void ClientHandleTask::execute() {
     }
     std::string fullPath = rootDir;
     fullPath.append(path);
-    int filed = open(fullPath.c_str(), O_RDONLY);
+
+    char absPath[PATH_MAX];
+    if (realpath(fullPath.c_str(), absPath) == NULL) {
+        client->sendRaw(HTTP404RAW);
+        return;
+    }
+    std::string filteringString = absPath;
+    if (filteringString.find(rootDir) == std::string::npos) {
+        client->sendRaw(HTTP404RAW);
+        return;
+    }
+
+    int filed = open(absPath, O_RDONLY);
     if (filed <= -1) {
         client->sendRaw(HTTP404RAW);
         return;

@@ -6,14 +6,6 @@
 
 #define SERVER_PORT 3490
 
-void *serverThreadWork(void *arg) {
-    try {
-        static_cast<Server*>(arg)->start();
-    } catch (std::runtime_error e) {
-        std::cout << e.what() << std::endl;
-    }
-}
-
 int main(int argc, char* argv[])
 {
     std::string rootPath;
