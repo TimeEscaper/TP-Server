@@ -37,14 +37,20 @@ void ClientHandleTask::execute() {
         return;
     }
 
+    bool needIndex = false;
     if (path[path.length()-1] == '/') {
         path.append("index.html");
+        needIndex = true;
     }
     std::string fullPath = rootDir;
     fullPath.append(path);
 
     char absPath[PATH_MAX];
     if (realpath(fullPath.c_str(), absPath) == NULL) {
+        if (needIndex) {
+            client->sendRaw(HTTP403RAW);
+            return;
+        }
         client->sendRaw(HTTP404RAW);
         return;
     }

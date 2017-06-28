@@ -16,6 +16,7 @@
 
 #define HTTP200RAW "HTTP/1.1 200 OK\r\nContent-Length: 13\r\nContent-Type: text/plain\r\nConnection: Closed\r\n\r\nHello, World!"
 #define HTTP400RAW "HTTP/1.1 400 Bad Request\r\nServer: TP-Server\r\nContent-Length: 22\r\nContent-Type: text/plain\r\nConnection: Closed\r\n\r\nError parsing request!"
+#define HTTP403RAW "HTTP/1.1 403 Forbidden\r\nServer: TP-Server\r\nContent-Length: 9\r\nContent-Type: text/plain\r\nConnection: Closed\r\n\r\nForbidden"
 #define HTTP404RAW "HTTP/1.1 404 Not Found\r\nServer: TP-Server\r\nContent-Length: 9\r\nContent-Type: text/plain\r\nConnection: Closed\r\n\r\nNot Found"
 #define HTTP405RAW "HTTP/1.1 405 Method Not Allowed\r\nServer: TP-Server\r\nContent-Length: 19\r\nContent-Type: text/plain\r\nConnection: Closed\r\n\r\nMethod not allowed!"
 #define HTTP500RAW "HTTP/1.1 500 Internal Server Error\r\nServer: TP-Server\r\nContent-Length: 15\r\nContent-Type: text/plain\r\nConnection: Closed\r\nInternal error!"
