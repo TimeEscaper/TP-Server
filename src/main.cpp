@@ -4,7 +4,7 @@
 #include "../include/server/Server.h"
 #include "../include/logging/log.h"
 
-#define SERVER_PORT 3490
+#define SERVER_PORT 80
 
 int main(int argc, char* argv[])
 {
